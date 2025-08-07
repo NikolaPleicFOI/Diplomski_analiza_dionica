@@ -1,6 +1,6 @@
 ﻿cmake_minimum_required (VERSION 3.8)
 
-set(OpenCL_DIR "E:\\stuff\\prog\\tools\\OpenCL-SDK-v2025.07.23-Win-x64\\share\\cmake\\OpenCL")
+set(OpenCL_DIR "C:\\OpenCL-SDK\\share\\cmake\\OpenCL")
 set(projFolder "nikola_pleic_diplomski")
 
 project(nikola_pleic_diplomski LANGUAGES C)
