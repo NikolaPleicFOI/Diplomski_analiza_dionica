@@ -12,6 +12,11 @@ int main(int argc, char** argv)
         printf_s("%u platform(s) found\n", numPlatforms);
     else
         printf_s("clGetPlatformIDs(%i)\n", CL_err);
-    printf("size of TradingDay: %d", sizeof (struct TradingDay));
+    
+    struct TradingDay* days = readCSVFile("..\\..\\..\\..\\podaci\\nasdaq\\A.csv");
+    if (days == NULL) {
+        printf("OOPS");
+    }
+    else free(days);
 	return 0;
 }

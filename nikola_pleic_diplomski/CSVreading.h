@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 
 #define LINE_LENGTH 100
 
@@ -11,16 +12,16 @@ struct TradingDay {
 	uint8_t month;
 	uint8_t day;
 	float open;
-	float close;
 	float high;
 	float low;
+	float close;
 	uint32_t volume;
 };
 
-bool readCSVFile(char*);
+void loadCSVData(FILE* file, struct TradingDay* tradingDays);
 
-inline uint32_t getLineCount(const *FILE);
+uint32_t getLineCount(FILE* file);
 
-struct TradingDay lineToDay(const char* line);
+struct TradingDay* readCSVFile(const char* fileName);
 
 #endif
