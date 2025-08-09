@@ -1,22 +1,21 @@
 ﻿#include "nikola_pleic_diplomski.h"
 #include "CSVreading.h"
+#include "OpenCLInteraction/CLinit.h"
 
 int main(int argc, char** argv)
 {
-    cl_int CL_err = CL_SUCCESS;
-    cl_uint numPlatforms = 0;
-
-    CL_err = clGetPlatformIDs(0, NULL, &numPlatforms);
-
-    if (CL_err == CL_SUCCESS)
-        printf_s("%u platform(s) found\n", numPlatforms);
-    else
-        printf_s("clGetPlatformIDs(%i)\n", CL_err);
-    
-    struct TradingDay* days = readCSVFile("..\\..\\..\\..\\podaci\\nasdaq\\A.csv");
-    if (days == NULL) {
-        printf("OOPS");
+    int res = initOCL();
+    if (res != 0) {
+        printf("Dogodila se graska %u\n", res);
     }
-    else free(days);
+
+    struct TradingDay* days = readCSVFile(FILE_TO_READ);
+    if (days == NULL) {
+        printf("Nisam uspio procitati datoteku");
+        return 0;
+    }
+
+    destryoOCL();
+    free(days);
 	return 0;
 }

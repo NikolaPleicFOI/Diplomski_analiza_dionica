@@ -18,10 +18,10 @@ struct TradingDay {
 	uint32_t volume;
 };
 
-void loadCSVData(FILE* file, struct TradingDay* tradingDays);
+static inline void loadCSVData(FILE *file, struct TradingDay *tradingDays);
 
-uint32_t getLineCount(FILE* file);
+static inline uint32_t getLineCount(FILE *file);
 
-struct TradingDay* readCSVFile(const char* fileName);
+struct TradingDay* readCSVFile(const char *fileName);
 
 #endif

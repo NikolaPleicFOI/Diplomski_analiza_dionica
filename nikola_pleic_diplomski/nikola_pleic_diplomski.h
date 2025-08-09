@@ -1,4 +1,1 @@
-﻿#pragma once
-
-#include <stdio.h>
-#include <CL/cl.h>
+﻿#define FILE_TO_READ "..\\..\\..\\..\\podaci\\nasdaq\\A.csv"
