@@ -17,6 +17,7 @@ add_library(CSVReading STATIC ${projFolder}/CSVreading.c)
 
 add_library(CLinit STATIC ${opencl_inter_folder}/CLinit.c)
 target_link_libraries(CLinit PUBLIC OpenCL::OpenCL)
+target_link_libraries(CLinit PRIVATE CSVReading)
 
 add_executable(${PROJECT_NAME} ${projFolder}/nikola_pleic_diplomski.c)
 

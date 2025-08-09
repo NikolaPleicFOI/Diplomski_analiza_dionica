@@ -5,32 +5,35 @@
 
 //uint8_t daysInMonths[12] = {31,29,31,30,31,30,31,31,30,31,30,31};
 
-struct TradingDay* readCSVFile(const char *fileName) {
+TradingDay* readCSVFile(const char *fileName, size_t *daysCount) {
 	FILE* file = fopen(fileName, "r");
 	if (!file) {
 		printf("Greska pri otvaranju datoteke %s", fileName);
 		return NULL;
 	}
+
+	*daysCount = getLineCount(file);
 	
-	struct TradingDay* days = malloc(getLineCount(file) * sizeof (struct TradingDay));
+	TradingDay* days = malloc(*daysCount * sizeof (TradingDay));
 	loadCSVData(file, days);
 	fclose(file);
 	return days;
 }
 
 
-static inline uint32_t getLineCount(FILE *file) {
-	uint32_t lines = 0;
+static inline size_t getLineCount(FILE *file) {
+	size_t lines = 0;
 	char c;
 	while (!feof(file)) {
 		c = fgetc(file);
 		if (c == '\n') lines++;
 	}
 	rewind(file);
-	return lines;
+	//Prva linija je samo format
+	return lines - 1;
 }
 
-static inline void loadCSVData(FILE *file, struct TradingDay *tradingDays) {
+static inline void loadCSVData(FILE *file, TradingDay *tradingDays) {
 	char line[LINE_LENGTH];
 
 	//Prva linija je samo format

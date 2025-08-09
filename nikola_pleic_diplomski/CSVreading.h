@@ -7,7 +7,7 @@
 
 #define LINE_LENGTH 100
 
-struct TradingDay {
+typedef struct TradingDay {
 	uint16_t year;
 	uint8_t month;
 	uint8_t day;
@@ -16,12 +16,12 @@ struct TradingDay {
 	float low;
 	float close;
 	uint32_t volume;
-};
+}TradingDay;
 
-static inline void loadCSVData(FILE *file, struct TradingDay *tradingDays);
+TradingDay* readCSVFile(const char* fileName, size_t* daysCount);
 
-static inline uint32_t getLineCount(FILE *file);
+static inline size_t getLineCount(FILE* file);
 
-struct TradingDay* readCSVFile(const char *fileName);
+static inline void loadCSVData(FILE *file, TradingDay *tradingDays);
 
 #endif
