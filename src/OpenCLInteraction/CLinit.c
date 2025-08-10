@@ -189,7 +189,6 @@ static int kernelSetup(clProgramData *data, char *file) {
         printf("Greska pri dodavanju argumenata kernelu: %d\n", err);
         return 13;
     }
-
     return 0;
 }
 

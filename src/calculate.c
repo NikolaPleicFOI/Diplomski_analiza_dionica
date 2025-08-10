@@ -6,12 +6,18 @@
 void initCalcValues(DaysData* datesData, size_t daysCount) {
     totalDays = daysCount;
     dates = datesData;
+
+    adi.offset = 0;
+    adi.kernelName = ADI_KERNEL_NAME;
+    momentum.offset = MOMEN_DAYS_OFFSET;
+    momentum.kernelName = MOMEN_KERNEL_NAME;
+    ma.offset = MA_DAYS_OFFSET;
+    ma.kernelName = MA_KERNEL_NAME;
 }
 
 int prepareADIndex(TradingDay *data) {
     char *file = CLV_FILE;
-    adi.offset = 0;
-    adi.kernelName = ADI_KERNEL_NAME;
+    
     int err = prepareKernel(data, totalDays, &adi, file);
     if (err != 0) {
         printf("Dogodila se graska %u\n", err);
@@ -49,8 +55,6 @@ int executeADIndex() {
 
 int prepareMomentum(TradingDay *data) {
     char *file = MOMEN_FILE;
-    momentum.offset = MOMEN_DAYS_OFFSET;
-    momentum.kernelName = MOMEN_KERNEL_NAME;
     int err = prepareKernel(data, totalDays, &momentum, file);
     if (err != 0) {
         printf("Dogodila se graska %u\n", err);
@@ -64,7 +68,6 @@ int executeMomentum() {
     if (res == NULL) {
         return -1;
     }
-
     char *prefix = malloc(32);
     if (prefix == NULL) {
         printf("malloc nije uspio\n");
@@ -72,6 +75,32 @@ int executeMomentum() {
     }
     strcpy(prefix, MOMEN_PREFIX);
     int err = writeResults(res, MOMEN_DAYS_OFFSET, prefix);
+    free(prefix);
+    return err;
+}
+
+int prepareMovingAverage(TradingDay* data) {
+    char* file = MA_FILE;
+    int err = prepareKernel(data, totalDays, &ma, file);
+    if (err != 0) {
+        printf("Dogodila se graska %u\n", err);
+        return err;
+    }
+    return 0;
+}
+
+int executeMovingAverage() {
+    float* res = execute(totalDays, &ma);
+    if (res == NULL) {
+        return -1;
+    }
+    char* prefix = malloc(32);
+    if (prefix == NULL) {
+        printf("malloc nije uspio\n");
+        return -1;
+    }
+    strcpy(prefix, MA_PREFIX);
+    int err = writeResults(res, MA_DAYS_OFFSET, prefix);
     free(prefix);
     return err;
 }

@@ -16,7 +16,7 @@ int main(int argc, char** argv)
     initCalcValues(data.days, totalDays);
 
     int res;
-    printf("Odaberi aktivnost:\n1. distribucijski indeks\n2. momentum\n");
+    printf("Odaberi aktivnost:\n1. distribucijski indeks\n2. momentum\n3. pomicni prosjek\n");
     if (scanf("%d", &res) != 1) {
         printf("Greska pri citanju unosa\n");
         return -1;
@@ -39,6 +39,16 @@ int main(int argc, char** argv)
             }
             if (executeMomentum() != 0) {
                 printf("Pogreska u kalkulaciji momentuma\n");
+                return -1;
+            }
+            break;
+        case 3:
+            if (prepareMovingAverage(data.trades) != 0) {
+                printf("Pogreska u pripremi kalkulacije pomicnog prosjeka\n");
+                return -1;
+            }
+            if (executeMovingAverage() != 0) {
+                printf("Pogreska u kalkulaciji pomicnog prosjeka\n");
                 return -1;
             }
             break;

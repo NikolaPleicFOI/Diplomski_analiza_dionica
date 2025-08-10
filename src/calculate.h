@@ -16,8 +16,15 @@
 #define MOMEN_DAYS_OFFSET 5
 #define MOMEN_KERNEL_NAME "momentum"
 
+#define MA_FILE "moving_average.cl"
+#define MA_PREFIX "MA_"
+#define MA_DAYS_OFFSET 5
+#define MA_KERNEL_NAME "MA"
+
 static clProgramData adi;
 static clProgramData momentum;
+static clProgramData ma;
+
 static size_t totalDays;
 static DaysData *dates;
 
@@ -29,6 +36,9 @@ int executeADIndex();
 int prepareMomentum(TradingDay *data);
 int executeMomentum();
 
-static int writeResults(float* res, unsigned int offset, char* prefix); 
+int prepareMovingAverage(TradingDay* data);
+int executeMovingAverage();
+
+static int writeResults(float* res, int offset, char* prefix);
 
 #endif
