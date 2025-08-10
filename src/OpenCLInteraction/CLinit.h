@@ -13,14 +13,16 @@ typedef struct clProgramData {
 	cl_kernel kernel;
 	cl_mem inBuff;
 	cl_mem resBuff;
+	uint16_t offset;
+	char *kernelName;
 }clProgramData;
 
-cl_platform_id platform;
-cl_device_id device;
-size_t maxItems;
-size_t *maxPerDim;
-cl_context context;
-cl_command_queue queue;
+static cl_platform_id platform;
+static cl_device_id device;
+static size_t maxItems;
+static size_t *maxPerDim;
+static cl_context context;
+static cl_command_queue queue;
 
 int initOCL();
 

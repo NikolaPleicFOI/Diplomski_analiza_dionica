@@ -13,21 +13,32 @@ int main(int argc, char** argv)
         printf("Nisam uspio ucitati podatke\n");
         return -1;
     }
+    initCalcValues(data.days, totalDays);
 
-    int res = 1;
-    /*printf("Odaberi aktivnost:\n1. distribucijski indeks\n");
+    int res;
+    printf("Odaberi aktivnost:\n1. distribucijski indeks\n2. momentum\n");
     if (scanf("%d", &res) != 1) {
         printf("Greska pri citanju unosa\n");
         return -1;
-    }*/
+    }
     switch (res) {
         case 1:
-            if (prepareADIndex(data.trades, totalDays) != 0) {
+            if (prepareADIndex(data.trades) != 0) {
                 printf("Pogreska u pripremi kalkulacije A/D indeksa\n");
                 return -1;
             }
             if (executeADIndex() != 0) {
                 printf("Pogreska u kalkulaciji A/D indeksa\n");
+                return -1;
+            }
+            break;
+        case 2:
+            if (prepareMomentum(data.trades) != 0){ 
+                printf("Pogreska u pripremi kalkulacije momentuma\n");
+                return -1;
+            }
+            if (executeMomentum() != 0) {
+                printf("Pogreska u kalkulaciji momentuma\n");
                 return -1;
             }
             break;

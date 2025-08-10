@@ -25,10 +25,10 @@ int initOCL() {
     return 0;
 }
 
-int prepareKernel(TradingDay* days, size_t daysCount, clProgramData* data, char* file) {
+int prepareKernel(TradingDay* trade, size_t daysCount, clProgramData* data, char* file) {
     cl_int clerr = CL_SUCCESS;
 
-    data->inBuff = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, sizeof(TradingDay) * daysCount, days, &clerr);
+    data->inBuff = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, sizeof(TradingDay) * daysCount, trade, &clerr);
     data->resBuff = clCreateBuffer(context, CL_MEM_WRITE_ONLY, daysCount * sizeof(float), NULL, &clerr);
     if (clerr != CL_SUCCESS) {
         printf("Nisam uspio napraviti buffer\n");
@@ -166,7 +166,7 @@ static int kernelSetup(clProgramData *data, char *file) {
         return 9;
     }
 
-    data->kernel = clCreateKernel(program, "CLV", &err);
+    data->kernel = clCreateKernel(program, data->kernelName, &err);
     if (err != CL_SUCCESS) {
         printf("Nisam uspio napraviti kernel\n");
         return 10;
@@ -184,14 +184,17 @@ static int kernelSetup(clProgramData *data, char *file) {
         printf("Greska pri dodavanju argumenata kernelu: %d\n", err);
         return 12;
     }
+    err = clSetKernelArg(data->kernel, 2, sizeof(data->offset), &data->offset);
+    if (err != CL_SUCCESS) {
+        printf("Greska pri dodavanju argumenata kernelu: %d\n", err);
+        return 13;
+    }
 
     return 0;
 }
 
 float* execute(size_t size, clProgramData *data) {
     cl_int err = CL_SUCCESS;
-
-    size_t sizes[] = {4, 8, 8};
 
     err = clEnqueueNDRangeKernel(queue, data->kernel, 1, NULL, &size, NULL, 0, NULL, NULL);
     if (err != CL_SUCCESS) {
