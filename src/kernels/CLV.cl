@@ -1,7 +1,4 @@
 typedef struct TradingDay {
-	ushort year;
-	uchar month;
-	uchar day;
 	float open;
 	float high;
 	float low;

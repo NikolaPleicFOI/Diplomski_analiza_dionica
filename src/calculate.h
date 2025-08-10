@@ -3,6 +3,7 @@
 #include "OpenCLInteraction/CLinit.h"
 
 #define WRITE_FILE "A.txt"
+#define CLV_FILE "CLV.cl"
 
 int distIndex(TradingDay* days, size_t daysCount);
 

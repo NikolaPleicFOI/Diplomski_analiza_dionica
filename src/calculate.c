@@ -3,13 +3,16 @@
 
 int distIndex(TradingDay *days, size_t daysCount) {
 	clProgramData clv;
-    char* file = "CLV.cl";
+    char* file = CLV_FILE;
+
     int err = prepareKernel(days, daysCount, &clv, file);
     if (err != 0) {
         printf("Dogodila se graska %u\n", err);
         return err;
     }
+
     float* res = execute(daysCount, &clv);
+
     if (res == NULL) {
         return -1;
     }
@@ -29,5 +32,6 @@ static int writeResults(float *res, size_t size) {
         fprintf(f, "%u: %f\n", i, res[i]);
     }
     fclose(f);
+    printf("Results were written to " WRITE_FILE);
     return 0;
 }

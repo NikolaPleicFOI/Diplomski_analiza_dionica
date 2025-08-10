@@ -138,7 +138,7 @@ static int kernelSetup(clProgramData *data, char *file) {
     program_source[size] = '\0';
     fclose(f);
 
-    program = clCreateProgramWithSource(context, 1, (const char**)&program_source, &size, &err);
+    program = clCreateProgramWithSource(context, 1, &program_source, &size, &err);
     if (err != CL_SUCCESS) {
         printf("Nisam uspio napraviti program\n");
         return 8;
