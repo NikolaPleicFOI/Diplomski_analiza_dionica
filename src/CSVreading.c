@@ -5,7 +5,7 @@
 
 int readCSVFile(const char *folderName, ProgData *data, size_t *totalDays) {
 	data->numStocks = getStockCount(folderName);
-	data->numDays = malloc(data->numStocks * sizeof(uint16_t));
+	data->numDays = malloc(data->numStocks * sizeof(uint16_t*));
 	data->stocks = malloc(data->numStocks * sizeof(char*));
 	for (int i = 0; i < data->numStocks; i++) {
 		data->stocks[i] = malloc(data->numStocks * STOCK_NAME_LENGTH);
@@ -17,7 +17,7 @@ int readCSVFile(const char *folderName, ProgData *data, size_t *totalDays) {
 		return -1;
 	}
 	*totalDays = prepareData(files, data);
-	if(*totalDays < 0) {
+	if (*totalDays < 0) {
 		return -1;
 	}
 
@@ -29,13 +29,17 @@ int readCSVFile(const char *folderName, ProgData *data, size_t *totalDays) {
 		FILE* f = fopen(files[i], "r");
 		if (!f) {
 			printf("Greska pri otvaranju datoteke %s", files[i]);
-			free(data);
 			return -1;
 		}
 		loadCSVData(f, data, totalDays);
 		fclose(f);
 	}
 
+	for (int i = 0; i < data->numStocks; i++) {
+		free(files[i]);
+	}
+	free(files);
+	
 	//for (int i = 0; i < data->numDays; i++) {
 	//	printf("Vrijednosti: %u, %u, %u, %f, %f, %f, %f, %u\n", data->days[i].year, data->days[i].month, data->days[i].day, data->trades[i].open,
 	//		data->trades[i].high, data->trades[i].low, data->trades[i].close, data->trades[i].volume);
@@ -50,7 +54,7 @@ static inline size_t getStockCount(const char *folder) {
 static inline char **getFiles(const char *folder, uint16_t numFiles) {
 	char **files = malloc(numFiles * sizeof(char*));
 	for (int i = 0; i < numFiles; i++) {
-		files[i] = malloc(sizeof(FILENAME_MAX));
+		files[i] = malloc(FILENAME_MAX);
 		if (files[i] == NULL) return NULL;
 	}
 	strcpy(files[0], folder);
@@ -84,7 +88,6 @@ static inline size_t prepareData(const char **files, ProgData *data) {
 		FILE* f = fopen(files[i], "r");
 		if (!f) {
 			printf("Greska pri otvaranju datoteke %s", files[i]);
-			free(data);
 			return -1;
 		}
 		data->numDays[i] = getLineCount(f);

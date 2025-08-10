@@ -22,8 +22,12 @@ int main(int argc, char** argv)
     }*/
     switch (res) {
         case 1:
-            if (distIndex(data.trades, totalDays) != 0) {
-                printf("Failed to calculate distribution index\n");
+            if (prepareADIndex(data.trades, totalDays) != 0) {
+                printf("Pogreska u pripremi kalkulacije A/D indeksa\n");
+                return -1;
+            }
+            if (executeADIndex() != 0) {
+                printf("Pogreska u kalkulaciji A/D indeksa\n");
                 return -1;
             }
             break;

@@ -40,6 +40,7 @@ int prepareKernel(TradingDay* days, size_t daysCount, clProgramData* data, char*
 }
 
 void destryoOCL() {
+    free(maxPerDim);
     clReleaseContext(context);
 }
 
@@ -111,7 +112,7 @@ static int chooseDevice() {
 }
 
 static int kernelSetup(clProgramData *data, char *file) {
-    char filePath[128] = KERNELS_FOLDER;
+    char filePath[256] = KERNELS_FOLDER;
     strcat(filePath, file);
 
     cl_program program;

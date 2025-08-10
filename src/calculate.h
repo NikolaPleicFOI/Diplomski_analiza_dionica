@@ -4,7 +4,13 @@
 
 #define WRITE_FILE "A.txt"
 #define CLV_FILE "CLV.cl"
+#define ADI_PREFIX "ADI_"
 
-int distIndex(TradingDay* days, size_t daysCount);
+clProgramData adi;
+size_t totalDays;
+
+int prepareADIndex(TradingDay* days, size_t daysCount);
+
+int executeADIndex();
 
 static int writeResults(float* res, size_t size);

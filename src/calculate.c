@@ -1,37 +1,48 @@
 #include "calculate.h"
 #include <stdio.h>
+#include <math.h>
 
-int distIndex(TradingDay *days, size_t daysCount) {
-	clProgramData clv;
+int prepareADIndex(TradingDay *days, size_t daysCount) {
+    totalDays = daysCount;
     char* file = CLV_FILE;
 
-    int err = prepareKernel(days, daysCount, &clv, file);
+    int err = prepareKernel(days, daysCount, &adi, file);
     if (err != 0) {
         printf("Dogodila se graska %u\n", err);
         return err;
     }
+}
 
-    float* res = execute(daysCount, &clv);
-
+int executeADIndex() {
+    float* res = execute(totalDays, &adi);
     if (res == NULL) {
         return -1;
     }
 
-    return writeResults(res, daysCount);
+    res[0] = 0;
+    for (int i = 1; i < totalDays; i++) {
+        if (isnan(res[i])) {
+            res[i] = res[i - 1];
+        }
+        else {
+            res[i] = res[i - 1] + res[i];
+        }
+    }
+    return writeResults(res, totalDays);
 }
 
 static int writeResults(float *res, size_t size) {
     FILE *f = NULL;
-    f = fopen(WRITE_FILE, "w");
+    f = fopen(ADI_PREFIX WRITE_FILE, "w");
     if (f == NULL) {
         printf("Failed to open file for writing results\n");
         return -1;
     }
 
-    for (int i = 0; i < size; i++) {
+    for (int i = 1; i < size; i++) {
         fprintf(f, "%u: %f\n", i, res[i]);
     }
     fclose(f);
-    printf("Results were written to " WRITE_FILE);
+    free(res);
     return 0;
 }

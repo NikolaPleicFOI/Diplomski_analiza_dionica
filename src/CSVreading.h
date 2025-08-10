@@ -6,6 +6,7 @@
 
 #define LINE_LENGTH 128
 #define STOCK_NAME_LENGTH 8
+#define FILENAME_MAX 128
 #define DATA_FOLDER "..\\..\\..\\..\\podaci\\nasdaq\\"
 
 typedef struct TradingDay {
