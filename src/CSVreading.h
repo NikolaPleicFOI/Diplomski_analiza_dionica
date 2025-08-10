@@ -1,16 +1,14 @@
 #ifndef CSVREADING_NPLEIC
 #define CSVREADING_NPLEIC
 
-#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 
-#define LINE_LENGTH 100
+#define LINE_LENGTH 128
+#define STOCK_NAME_LENGTH 8
+#define DATA_FOLDER "..\\..\\..\\..\\podaci\\nasdaq\\"
 
 typedef struct TradingDay {
-	uint16_t year;
-	uint8_t month;
-	uint8_t day;
 	float open;
 	float high;
 	float low;
@@ -18,10 +16,30 @@ typedef struct TradingDay {
 	uint32_t volume;
 }TradingDay;
 
-TradingDay* readCSVFile(const char* fileName, size_t* daysCount);
+typedef struct DaysData {
+	uint16_t year;
+	uint8_t month;
+	uint8_t day;
+}DaysData;
+
+typedef struct ProgData {
+	char **stocks;
+	TradingDay *trades;
+	DaysData *days;
+	uint16_t *numDays;
+	uint16_t numStocks;
+}ProgData;
+
+int readCSVFile(const char* folderName, ProgData* data, size_t* totalDays);
+
+static inline size_t getStockCount(const char* folder);
+
+static inline char** getFiles(const char* folder, uint16_t numFiles);
 
 static inline size_t getLineCount(FILE* file);
 
-static inline void loadCSVData(FILE *file, TradingDay *tradingDays);
+static inline size_t prepareData(const char** files, ProgData* data);
+
+static inline void loadCSVData(FILE* file, ProgData* data, size_t* day);
 
 #endif

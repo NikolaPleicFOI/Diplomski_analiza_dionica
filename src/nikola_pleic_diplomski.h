@@ -1,1 +1,1 @@
-﻿#define FILE_TO_READ "..\\..\\..\\..\\podaci\\nasdaq\\A.csv"
+﻿#define FILE_TO_READ "..\\..\\..\\..\\podaci\\nasdaq\\ABC.csv"

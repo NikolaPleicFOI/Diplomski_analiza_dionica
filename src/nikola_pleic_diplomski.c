@@ -6,19 +6,18 @@
 int main(int argc, char** argv)
 {
     initOCL();
-    size_t daysCount;
-
-    struct TradingDay* days = readCSVFile(FILE_TO_READ, &daysCount);
-    if (days == NULL) {
-        printf("Nisam uspio procitati datoteku");
+    size_t totalDays;
+    ProgData data;
+    int r = readCSVFile(FILE_TO_READ, &data, &totalDays);
+    if (r != 0) {
+        printf("Nisam uspio ucitati podatke");
         return 0;
     }
 
-    if (distIndex(days, daysCount) != 0) {
+    /*if (distIndex(data.trades, totalDays) != 0) {
         printf("Failed to calculate distribution index");
-    }
+    }*/
 
     destryoOCL();
-    free(days);
 	return 0;
 }
