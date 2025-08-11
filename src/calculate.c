@@ -2,23 +2,26 @@
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
+#include <windows.h>
 
-void initCalcValues(DaysData* datesData, size_t daysCount) {
+int initCalcValues(ProgData *progData, size_t daysCount) {
     totalDays = daysCount;
-    dates = datesData;
+    data = progData;
 
+    CreateDirectory(OUT_FOLDER, NULL);
     adi.offset = 0;
     adi.kernelName = ADI_KERNEL_NAME;
     momentum.offset = MOMEN_DAYS_OFFSET;
     momentum.kernelName = MOMEN_KERNEL_NAME;
     ma.offset = MA_DAYS_OFFSET;
     ma.kernelName = MA_KERNEL_NAME;
+    return 0;
 }
 
-clProgramData *prepareADIndex(TradingDay *data) {
-    char *file = CLV_FILE;
+clProgramData *prepareADIndex() {
+    char *kernel = CLV_FILE;
     
-    int err = prepareKernel(data, totalDays, &adi, file);
+    int err = prepareKernel(data->trades, totalDays, &adi, kernel);
     if (err != 0) {
         printf("Dogodila se graska %u\n", err);
         return NULL;
@@ -26,8 +29,8 @@ clProgramData *prepareADIndex(TradingDay *data) {
     return &adi;
 }
 
-float* enqueue(clProgramData *prog) {
-    float* res = execute(totalDays, prog);
+float *enqueue(clProgramData *prog) {
+    float *res = execute(totalDays, prog);
     if (res == NULL) {
         return NULL;
     }
@@ -45,20 +48,13 @@ int resultADIndex(float *res) {
         }
     }
 
-    char *prefix = malloc(32);
-    if (prefix == NULL) {
-        printf("malloc nije uspio\n");
-        return - 1;
-    }
-    strcpy(prefix, ADI_PREFIX);
-    int err = writeResults(res, 1, prefix);
-    free(prefix);
+    int err = writeResults(res, 1, ADI_PREFIX);
     return err;
 }
 
-clProgramData *prepareMomentum(TradingDay *data) {
-    char *file = MOMEN_FILE;
-    int err = prepareKernel(data, totalDays, &momentum, file);
+clProgramData *prepareMomentum() {
+    char *kernel = MOMEN_FILE;
+    int err = prepareKernel(data->trades, totalDays, &momentum, kernel);
     if (err != 0) {
         printf("Dogodila se graska %u\n", err);
         return NULL;
@@ -67,20 +63,13 @@ clProgramData *prepareMomentum(TradingDay *data) {
 }
 
 int resultMomentum(float *res) {
-    char *prefix = malloc(32);
-    if (prefix == NULL) {
-        printf("malloc nije uspio\n");
-        return -1;
-    }
-    strcpy(prefix, MOMEN_PREFIX);
-    int err = writeResults(res, MOMEN_DAYS_OFFSET, prefix);
-    free(prefix);
+    int err = writeResults(res, MOMEN_DAYS_OFFSET, MOMEN_PREFIX);
     return err;
 }
 
-clProgramData *prepareMovingAverage(TradingDay *data) {
-    char *file = MA_FILE;
-    int err = prepareKernel(data, totalDays, &ma, file);
+clProgramData *prepareMovingAverage() {
+    char *kernel = MA_FILE;
+    int err = prepareKernel(data->trades, totalDays, &ma, kernel);
     if (err != 0) {
         printf("Dogodila se graska %u\n", err);
         return NULL;
@@ -89,39 +78,36 @@ clProgramData *prepareMovingAverage(TradingDay *data) {
 }
 
 int resultMovingAverage(float *res) {
-    char* prefix = malloc(32);
-    if (prefix == NULL) {
-        printf("malloc nije uspio\n");
-        return -1;
-    }
-    strcpy(prefix, MA_PREFIX);
-    int err = writeResults(res, MA_DAYS_OFFSET, prefix);
-    free(prefix);
+    int err = writeResults(res, MA_DAYS_OFFSET, MA_PREFIX);
     return err;
 }
 
 static int writeResults(float *res, int offset, char *prefix) {
-    char *filename = WRITE_FILE;
-    FILE *f = NULL;
-    strcat(prefix, filename);
-    f = fopen(prefix, "w");
-    if (f == NULL) {
-        printf("Failed to open file for writing results\n");
-        return -1;
-    }
+    char* filename[FILENAME_MAX];
+    uint32_t curr = 0;
+    for (int i = 0; i < data->numStocks; i++) {
+        strcpy(filename, OUT_FOLDER "\\");
+        strcat(filename, prefix);
+        strcat(filename, data->stocks[i]);
+        strcat(filename, OUT_FILE_EXTENTION);
+        FILE *f = NULL;
+        f = fopen(filename, "w");
+        if (f == NULL) {
+            printf("Nisam uspio otvoriti datoteku za pisanje:%s\n", filename);
+            return -1;
+        }
+        int end = curr + data->numDays[i];
+        curr += offset;
+        int j = curr;
 
-    int i = 0, end = totalDays;
-    if (offset > 0) {
-        i += offset;
+        while (j < end) {
+            fprintf(f, "%u-%02u-%02u:%20f\n", data->days[curr].year, data->days[curr].month, data->days[curr].day, res[curr]);
+            j++;
+            curr++;
+        }
+        fflush(f);
+        fclose(f);
     }
-    else {
-        end -= offset;
-    }
-    while (i < end) {
-        fprintf(f, "%u-%02u-%02u:%20f\n", dates[i].year, dates[i].month, dates[i].day, res[i]);
-        i++;
-    }
-    fclose(f);
     free(res);
     return 0;
 }

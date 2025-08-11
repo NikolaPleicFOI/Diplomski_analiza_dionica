@@ -5,7 +5,8 @@
 #include "CSVreading.h"
 #include "OpenCLInteraction/CLinit.h"
 
-#define WRITE_FILE "A.txt"
+#define OUT_FOLDER "results"
+#define OUT_FILE_EXTENTION ".txt"
 
 #define CLV_FILE "CLV.cl"
 #define ADI_PREFIX "ADI_"
@@ -26,18 +27,18 @@ static clProgramData momentum;
 static clProgramData ma;
 
 static size_t totalDays;
-static DaysData *dates;
+static ProgData *data;
 
-void initCalcValues(DaysData *dates, size_t daysCount);
+int initCalcValues(ProgData *data, size_t daysCount);
 float* enqueue(clProgramData *prog);
 
-clProgramData* prepareADIndex(TradingDay* data);
+clProgramData* prepareADIndex();
 int resultADIndex(float* res);
 
-clProgramData* prepareMomentum(TradingDay* data);
+clProgramData* prepareMomentum();
 int resultMomentum(float* res);
 
-clProgramData* prepareMovingAverage(TradingDay* data);
+clProgramData* prepareMovingAverage();
 int resultMovingAverage(float* res);
 
 static int writeResults(float* res, int offset, char* prefix);

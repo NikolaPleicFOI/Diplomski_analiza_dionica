@@ -25,7 +25,7 @@ int initOCL() {
     return 0;
 }
 
-int prepareKernel(TradingDay* trade, size_t daysCount, clProgramData* data, char* file) {
+int prepareKernel(TradingDay* trade, size_t daysCount, clProgramData* data, char* kernelFile) {
     cl_int clerr = CL_SUCCESS;
 
     data->inBuff = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, sizeof(TradingDay) * daysCount, trade, &clerr);
@@ -35,7 +35,7 @@ int prepareKernel(TradingDay* trade, size_t daysCount, clProgramData* data, char
         return 6;
     }
 
-    int err = kernelSetup(data, file);
+    int err = kernelSetup(data, kernelFile);
     if (err != 0) return err;
 }
 
@@ -111,9 +111,9 @@ static int chooseDevice() {
     return 0;
 }
 
-static int kernelSetup(clProgramData *data, char *file) {
+static int kernelSetup(clProgramData *data, char *kernelFile) {
     char filePath[256] = KERNELS_FOLDER;
-    strcat(filePath, file);
+    strcat(filePath, kernelFile);
 
     cl_program program;
     FILE* f = NULL;
@@ -149,20 +149,7 @@ static int kernelSetup(clProgramData *data, char *file) {
 
     err = clBuildProgram(program, 1, &device, NULL, NULL, NULL);
     if (err != CL_SUCCESS) {
-        clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG,
-            0, NULL, &size);
-        char *program_log = malloc(size + 1);
-        if (program_log == NULL) {
-            printf("malloc je bacio gresku\n");
-            return -1;
-        }
-        
-        clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG,
-            size + 1, program_log, NULL);
-        program_log[size] = '\0';
-        printf("%s\n", program_log);
-        free(program_log);
-
+        printCLErrors(&program, size);
         return 9;
     }
 
@@ -171,8 +158,6 @@ static int kernelSetup(clProgramData *data, char *file) {
         printf("Nisam uspio napraviti kernel\n");
         return 10;
     }
-
-    clUnloadCompiler();
 
     err = clSetKernelArg(data->kernel, 0, sizeof(data->inBuff), &data->inBuff);
     if (err != CL_SUCCESS) {
@@ -190,6 +175,19 @@ static int kernelSetup(clProgramData *data, char *file) {
         return 13;
     }
     return 0;
+}
+
+static void printCLErrors(cl_program *program, size_t size) {
+    clGetProgramBuildInfo(*program, device, CL_PROGRAM_BUILD_LOG, 0, NULL, &size);
+    char* program_log = malloc(size + 1);
+    if (program_log == NULL) {
+        printf("malloc je bacio gresku\n");
+        return;
+    }
+    clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, size + 1, program_log, NULL);
+    program_log[size] = '\0';
+    printf("%s\n", program_log);
+    free(program_log);
 }
 
 float* execute(size_t size, clProgramData *data) {

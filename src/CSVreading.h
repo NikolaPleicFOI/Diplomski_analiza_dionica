@@ -4,11 +4,12 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#define MAX_STOCKS 10
+#define DATA_FOLDER "..\\..\\..\\..\\podaci\\nasdaq\\"
+
 #define LINE_LENGTH 128
 #define STOCK_NAME_LENGTH 8
 #define FILENAME_MAX 256
-#define MAX_STOCKS 10
-#define DATA_FOLDER "..\\..\\..\\..\\podaci\\nasdaq\\"
 
 typedef struct TradingDay {
 	float open;

@@ -19,7 +19,10 @@ int main(int argc, char** argv)
     }
     printf("Ucitano je %u datoteka sa %llu redaka\n", data.numStocks, totalDays);
     
-    initCalcValues(data.days, totalDays);
+    if (initCalcValues(&data, totalDays) != 0) {
+        printf("Greska pri inicijalizaciji vrijednosti\n");
+        return -1;
+    }
 
     int opcija;
     printf("Odaberi aktivnost:\n1. distribucijski indeks\n2. momentum\n3. pomicni prosjek\n4. sve\n");
@@ -29,7 +32,7 @@ int main(int argc, char** argv)
     }
     switch (opcija) {
         case 1:
-            ad = prepareADIndex(data.trades);
+            ad = prepareADIndex();
             if (ad == NULL) {
                 printf("Pogreska u pripremi kalkulacije A/D indeksa\n");
                 return -1;
@@ -41,7 +44,7 @@ int main(int argc, char** argv)
             }
             break;
         case 2:
-            mm = prepareMomentum(data.trades);
+            mm = prepareMomentum();
             if (mm == NULL) {
                 printf("Pogreska u pripremi kalkulacije momentuma\n");
                 return -1;
@@ -53,7 +56,7 @@ int main(int argc, char** argv)
             }
             break;
         case 3:
-            mov = prepareMovingAverage(data.trades);
+            mov = prepareMovingAverage();
             if (mov == NULL) {
                 printf("Pogreska u pripremi kalkulacije pomicnog prosjeka\n");
                 return -1;
@@ -65,17 +68,17 @@ int main(int argc, char** argv)
             }
             break;
         case 4:
-            ad = prepareADIndex(data.trades);
+            ad = prepareADIndex();
             if (ad == NULL) {
                 printf("Pogreska u pripremi kalkulacije A/D indeksa\n");
                 return -1;
             }
-            mm = prepareMomentum(data.trades);
+            mm = prepareMomentum();
             if (mm == NULL) {
                 printf("Pogreska u pripremi kalkulacije momentuma\n");
                 return -1;
             }
-            mov = prepareMovingAverage(data.trades);
+            mov = prepareMovingAverage();
             if (mov == NULL) {
                 printf("Pogreska u pripremi kalkulacije pomicnog prosjeka\n");
                 return -1;

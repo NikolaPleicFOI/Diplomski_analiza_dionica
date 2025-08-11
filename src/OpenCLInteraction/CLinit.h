@@ -35,6 +35,8 @@ static int chooseDevice();
 
 static int kernelSetup(clProgramData *data, char *file);
 
+static void printCLErrors(cl_program* program, size_t size);
+
 float* execute(size_t size, clProgramData *data);
 
 #endif
