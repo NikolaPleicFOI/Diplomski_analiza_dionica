@@ -204,7 +204,7 @@ float* execute(size_t size, clProgramData *data) {
         printf("malloc je bacio gresku\n");
         return NULL;
     }
-    err = clEnqueueReadBuffer(queue, data->resBuff, CL_TRUE, 0, size * sizeof(float), res, 0, NULL, &data->event);
+    err = clEnqueueReadBuffer(queue, data->resBuff, CL_FALSE, 0, size * sizeof(float), res, 0, NULL, &data->event);
     if (err != CL_SUCCESS) {
         printf("Greska pri citanju buffera\n");
         return NULL;

@@ -38,6 +38,7 @@ float *enqueue(clProgramData *prog) {
 }
 
 int resultADIndex(float *res) {
+    clWaitForEvents(1, &adi.event);
     res[0] = 0;
     for (int i = 1; i < totalDays; i++) {
         if (isnan(res[i])) {
@@ -63,6 +64,7 @@ clProgramData *prepareMomentum() {
 }
 
 int resultMomentum(float *res) {
+    clWaitForEvents(1, &momentum.event);
     int err = writeResults(res, MOMEN_DAYS_OFFSET, MOMEN_PREFIX);
     return err;
 }
@@ -78,6 +80,7 @@ clProgramData *prepareMovingAverage() {
 }
 
 int resultMovingAverage(float *res) {
+    clWaitForEvents(1, &ma.event);
     int err = writeResults(res, MA_DAYS_OFFSET, MA_PREFIX);
     return err;
 }
