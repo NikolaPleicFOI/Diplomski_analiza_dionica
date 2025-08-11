@@ -8,6 +8,8 @@ int main(int argc, char** argv)
     initOCL();
     size_t totalDays;
     ProgData data;
+    clProgramData *ad, *mm, *mov;
+    float* resa, * resmm, * resmov;
     int r = readCSVFile(FILE_TO_READ, &data, &totalDays);
     if (r != 0) {
         printf("Nisam uspio ucitati podatke\n");
@@ -15,45 +17,84 @@ int main(int argc, char** argv)
     }
     initCalcValues(data.days, totalDays);
 
-    int res;
-    printf("Odaberi aktivnost:\n1. distribucijski indeks\n2. momentum\n3. pomicni prosjek\n");
-    if (scanf("%d", &res) != 1) {
+    int opcija;
+    printf("Odaberi aktivnost:\n1. distribucijski indeks\n2. momentum\n3. pomicni prosjek\n4. sve\n");
+    if (scanf("%d", &opcija) != 1) {
         printf("Greska pri citanju unosa\n");
         return -1;
     }
-    switch (res) {
+    switch (opcija) {
         case 1:
-            if (prepareADIndex(data.trades) != 0) {
+            ad = prepareADIndex(data.trades);
+            if (ad == NULL) {
                 printf("Pogreska u pripremi kalkulacije A/D indeksa\n");
                 return -1;
             }
-            if (executeADIndex() != 0) {
+            resa = enqueue(ad);
+            if (resultADIndex(resa) != 0) {
                 printf("Pogreska u kalkulaciji A/D indeksa\n");
                 return -1;
             }
             break;
         case 2:
-            if (prepareMomentum(data.trades) != 0){ 
+            mm = prepareMomentum(data.trades);
+            if (mm == NULL) {
                 printf("Pogreska u pripremi kalkulacije momentuma\n");
                 return -1;
             }
-            if (executeMomentum() != 0) {
+            resmm = enqueue(mm);
+            if (resultMomentum(resmm) != 0) {
                 printf("Pogreska u kalkulaciji momentuma\n");
                 return -1;
             }
             break;
         case 3:
-            if (prepareMovingAverage(data.trades) != 0) {
+            mov = prepareMovingAverage(data.trades);
+            if (mov == NULL) {
                 printf("Pogreska u pripremi kalkulacije pomicnog prosjeka\n");
                 return -1;
             }
-            if (executeMovingAverage() != 0) {
+            resmov = enqueue(mov);
+            if (resultMovingAverage(resmov) != 0) {
+                printf("Pogreska u kalkulaciji pomicnog prosjeka\n");
+                return -1;
+            }
+            break;
+        case 4:
+            ad = prepareADIndex(data.trades);
+            if (ad == NULL) {
+                printf("Pogreska u pripremi kalkulacije A/D indeksa\n");
+                return -1;
+            }
+            mm = prepareMomentum(data.trades);
+            if (mm == NULL) {
+                printf("Pogreska u pripremi kalkulacije momentuma\n");
+                return -1;
+            }
+            mov = prepareMovingAverage(data.trades);
+            if (mov == NULL) {
+                printf("Pogreska u pripremi kalkulacije pomicnog prosjeka\n");
+                return -1;
+            }
+            clUnloadCompiler();
+            float *resad = enqueue(ad);
+            float *resmm = enqueue(mm);
+            float *resmov = enqueue(mov);
+            if (resultADIndex(resad) != 0) {
+                printf("Pogreska u kalkulaciji A/D indeksa\n");
+                return -1;
+            }
+            if (resultMomentum(resmm) != 0) {
+                printf("Pogreska u kalkulaciji momentuma\n");
+                return -1;
+            }
+            if (resultMovingAverage(resmov) != 0) {
                 printf("Pogreska u kalkulaciji pomicnog prosjeka\n");
                 return -1;
             }
             break;
         default:
-            printf("Unos nije u ponudenim opcijama\n");
+            printf("Ne postoji opcija %d\n", opcija);
             return -1;
     }
 

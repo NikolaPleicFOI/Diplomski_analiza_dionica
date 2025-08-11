@@ -16,7 +16,7 @@ int initOCL() {
         return 4;
     }
 
-    queue = clCreateCommandQueue(context, device, CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE, &clerr);
+    queue = clCreateCommandQueue(context, device, NULL, &clerr);
     if (clerr != CL_SUCCESS) {
         printf("Nisam uspio napraviti command queue\n");
         return 5;
@@ -206,16 +206,9 @@ float* execute(size_t size, clProgramData *data) {
         printf("malloc je bacio gresku\n");
         return NULL;
     }
-
-    err = clEnqueueReadBuffer(queue, data->resBuff, CL_TRUE, 0, size * sizeof(float), res, 0, NULL, NULL);
+    err = clEnqueueReadBuffer(queue, data->resBuff, CL_TRUE, 0, size * sizeof(float), res, 0, NULL, &data->event);
     if (err != CL_SUCCESS) {
         printf("Greska pri citanju buffera\n");
-        return NULL;
-    }
-
-    err = clFinish(queue);
-    if (err != CL_SUCCESS) {
-        printf("Greska pri izvrsavanju kernela (nema memorije?)\n");
         return NULL;
     }
 

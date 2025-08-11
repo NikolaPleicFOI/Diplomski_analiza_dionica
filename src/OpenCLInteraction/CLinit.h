@@ -15,6 +15,7 @@ typedef struct clProgramData {
 	cl_mem resBuff;
 	uint16_t offset;
 	char *kernelName;
+	cl_event event;
 }clProgramData;
 
 static cl_platform_id platform;

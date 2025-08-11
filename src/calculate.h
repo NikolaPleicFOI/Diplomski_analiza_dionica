@@ -1,5 +1,5 @@
-#ifndef NPLEIC_CALCULATE
-#define NPLEIC_CALCULATE
+#ifndef CALCULATE_NPLEIC
+#define CALCULATE_NPLEIC
 
 #include <stdlib.h>
 #include "CSVreading.h"
@@ -29,15 +29,16 @@ static size_t totalDays;
 static DaysData *dates;
 
 void initCalcValues(DaysData *dates, size_t daysCount);
+float* enqueue(clProgramData *prog);
 
-int prepareADIndex(TradingDay *data);
-int executeADIndex();
+clProgramData* prepareADIndex(TradingDay* data);
+int resultADIndex(float* res);
 
-int prepareMomentum(TradingDay *data);
-int executeMomentum();
+clProgramData* prepareMomentum(TradingDay* data);
+int resultMomentum(float* res);
 
-int prepareMovingAverage(TradingDay* data);
-int executeMovingAverage();
+clProgramData* prepareMovingAverage(TradingDay* data);
+int resultMovingAverage(float* res);
 
 static int writeResults(float* res, int offset, char* prefix);
 

@@ -15,23 +15,26 @@ void initCalcValues(DaysData* datesData, size_t daysCount) {
     ma.kernelName = MA_KERNEL_NAME;
 }
 
-int prepareADIndex(TradingDay *data) {
+clProgramData *prepareADIndex(TradingDay *data) {
     char *file = CLV_FILE;
     
     int err = prepareKernel(data, totalDays, &adi, file);
     if (err != 0) {
         printf("Dogodila se graska %u\n", err);
-        return err;
+        return NULL;
     }
-    return 0;
+    return &adi;
 }
 
-int executeADIndex() {
-    float *res = execute(totalDays, &adi);
+float* enqueue(clProgramData *prog) {
+    float* res = execute(totalDays, prog);
     if (res == NULL) {
-        return -1;
+        return NULL;
     }
+    return res;
+}
 
+int resultADIndex(float *res) {
     res[0] = 0;
     for (int i = 1; i < totalDays; i++) {
         if (isnan(res[i])) {
@@ -53,21 +56,17 @@ int executeADIndex() {
     return err;
 }
 
-int prepareMomentum(TradingDay *data) {
+clProgramData *prepareMomentum(TradingDay *data) {
     char *file = MOMEN_FILE;
     int err = prepareKernel(data, totalDays, &momentum, file);
     if (err != 0) {
         printf("Dogodila se graska %u\n", err);
-        return err;
+        return NULL;
     }
-    return 0;
+    return &momentum;
 }
 
-int executeMomentum() {
-    float *res = execute(totalDays, &momentum);
-    if (res == NULL) {
-        return -1;
-    }
+int resultMomentum(float *res) {
     char *prefix = malloc(32);
     if (prefix == NULL) {
         printf("malloc nije uspio\n");
@@ -79,21 +78,17 @@ int executeMomentum() {
     return err;
 }
 
-int prepareMovingAverage(TradingDay* data) {
-    char* file = MA_FILE;
+clProgramData *prepareMovingAverage(TradingDay *data) {
+    char *file = MA_FILE;
     int err = prepareKernel(data, totalDays, &ma, file);
     if (err != 0) {
         printf("Dogodila se graska %u\n", err);
-        return err;
+        return NULL;
     }
-    return 0;
+    return &ma;
 }
 
-int executeMovingAverage() {
-    float* res = execute(totalDays, &ma);
-    if (res == NULL) {
-        return -1;
-    }
+int resultMovingAverage(float *res) {
     char* prefix = malloc(32);
     if (prefix == NULL) {
         printf("malloc nije uspio\n");
