@@ -6,7 +6,8 @@
 
 #define LINE_LENGTH 128
 #define STOCK_NAME_LENGTH 8
-#define FILENAME_MAX 128
+#define FILENAME_MAX 256
+#define MAX_STOCKS 10
 #define DATA_FOLDER "..\\..\\..\\..\\podaci\\nasdaq\\"
 
 typedef struct TradingDay {
@@ -31,16 +32,16 @@ typedef struct ProgData {
 	uint16_t numStocks;
 }ProgData;
 
-int readCSVFile(const char* folderName, ProgData* data, size_t* totalDays);
+int readCSVFiles(const char* folderName, ProgData* data, size_t* totalDays);
 
 static inline size_t getStockCount(const char* folder);
 
 static inline char** getFiles(const char* folder, uint16_t numFiles);
 
-static inline size_t getLineCount(FILE* file);
+static inline size_t getDaysCount(FILE* file);
 
 static inline size_t prepareData(const char** files, ProgData* data);
 
-static inline void loadCSVData(FILE* file, ProgData* data, size_t* day);
+static inline int loadCSVData(FILE* file, ProgData* data, size_t* day, int num);
 
 #endif

@@ -2,9 +2,14 @@
 #include <memory.h>
 #include <string.h>
 #include <stdlib.h>
+#include <windows.h>
 
-int readCSVFile(const char *folderName, ProgData *data, size_t *totalDays) {
+int readCSVFiles(const char *folderName, ProgData *data, size_t *totalDays) {
 	data->numStocks = getStockCount(folderName);
+	if (data->numStocks == -1) {
+		return -1;
+	}
+	
 	data->numDays = malloc(data->numStocks * sizeof(uint16_t*));
 	data->stocks = malloc(data->numStocks * sizeof(char*));
 	for (int i = 0; i < data->numStocks; i++) {
@@ -16,6 +21,7 @@ int readCSVFile(const char *folderName, ProgData *data, size_t *totalDays) {
 		printf("Nisam uspio alocirati imena datoteka\n");
 		return -1;
 	}
+	
 	*totalDays = prepareData(files, data);
 	if (*totalDays < 0) {
 		return -1;
@@ -28,40 +34,77 @@ int readCSVFile(const char *folderName, ProgData *data, size_t *totalDays) {
 	for (int i = 0; i < data->numStocks; i++) {
 		FILE* f = fopen(files[i], "r");
 		if (!f) {
-			printf("Greska pri otvaranju datoteke %s", files[i]);
+			printf("Greska pri otvaranju datoteke %s\n", files[i]);
 			return -1;
 		}
-		loadCSVData(f, data, totalDays);
+		if (loadCSVData(f, data, totalDays, i) != 0) {
+			printf("greska pri ucitavanju datoteke %s\n", files[i]);
+			return -1;
+		}
 		fclose(f);
 	}
 
 	for (int i = 0; i < data->numStocks; i++) {
 		free(files[i]);
 	}
+	/*for (int i = 0; i < *totalDays; i++) {
+		printf("Vrijednosti: %u, %u, %u, %f, %f, %f, %f, %u\n", data->days[i].year, data->days[i].month, data->days[i].day, data->trades[i].open,
+			data->trades[i].high, data->trades[i].low, data->trades[i].close, data->trades[i].volume);
+	}*/
 	free(files);
-	
-	//for (int i = 0; i < data->numDays; i++) {
-	//	printf("Vrijednosti: %u, %u, %u, %f, %f, %f, %f, %u\n", data->days[i].year, data->days[i].month, data->days[i].day, data->trades[i].open,
-	//		data->trades[i].high, data->trades[i].low, data->trades[i].close, data->trades[i].volume);
-	//}
 	return 0;
 }
 
 static inline size_t getStockCount(const char *folder) {
-	return 1;
+	size_t count = 0;
+	WIN32_FIND_DATA fdata;
+	wchar_t path[2048];
+	
+	sprintf(path, "%s*.csv", folder);
+	HANDLE hFind = FindFirstFile(path, &fdata);
+
+	if (hFind  == INVALID_HANDLE_VALUE){
+		printf("Nisam pronasao direktorij: %s\n", folder);
+		return -1;
+	}
+	do {
+		count++;
+	} while (FindNextFile(hFind, &fdata));
+	
+	FindClose(hFind);
+	if (count > MAX_STOCKS) {
+		count = MAX_STOCKS;
+	}
+	return count;
 }
 
 static inline char **getFiles(const char *folder, uint16_t numFiles) {
-	char **files = malloc(numFiles * sizeof(char*));
-	for (int i = 0; i < numFiles; i++) {
+	char** files = malloc(numFiles * sizeof(char*));
+	WIN32_FIND_DATA fdata;
+	wchar_t path[2048];
+
+	sprintf(path, "%s*.csv", folder);
+	HANDLE hFind = FindFirstFile(path, &fdata);
+
+	int i = 0;
+	size_t pom;
+	do {
+		if (i == numFiles) {
+			printf("greska u kalkuliranju broja datoteka");
+			return NULL;
+		}
 		files[i] = malloc(FILENAME_MAX);
 		if (files[i] == NULL) return NULL;
-	}
-	strcpy(files[0], folder);
+		strcpy(files[i], folder);
+		strcat(files[i], fdata.cFileName);
+		i++;
+	} while (FindNextFile(hFind, &fdata) && (i < MAX_STOCKS));
+
+	FindClose(hFind);
 	return files;
 }
 
-static inline size_t getLineCount(FILE* file) {
+static inline size_t getDaysCount(FILE* file) {
 	size_t lines = 0;
 	char c;
 	while (!feof(file)) {
@@ -87,17 +130,17 @@ static inline size_t prepareData(const char **files, ProgData *data) {
 
 		FILE* f = fopen(files[i], "r");
 		if (!f) {
-			printf("Greska pri otvaranju datoteke %s", files[i]);
+			printf("Greska pri otvaranju datoteke %s\n", files[i]);
 			return -1;
 		}
-		data->numDays[i] = getLineCount(f);
+		data->numDays[i] = getDaysCount(f);
 		totalDays += data->numDays[i];
 		fclose(f);
 	}
 	return totalDays;
 }
 
-static inline void loadCSVData(FILE *file, ProgData *data, size_t *day) {
+static inline int loadCSVData(FILE *file, ProgData *data, size_t *day, int num) {
 	char line[LINE_LENGTH];
 	//Prva linija je samo format
 	fgets(line, LINE_LENGTH, file);
@@ -112,4 +155,9 @@ static inline void loadCSVData(FILE *file, ProgData *data, size_t *day) {
 		t = &(data->trades[*day]);
 		d = &(data->days[*day]);
 	}
+	if (i != data->numDays[num]) {
+		printf("GRESKA! dan %u bi trebao imati &u dana, ali ima %u\n", num, data->numDays[num], i);
+		return -1;
+	}
+	return 0;
 }

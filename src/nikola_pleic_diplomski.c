@@ -10,11 +10,15 @@ int main(int argc, char** argv)
     ProgData data;
     clProgramData *ad, *mm, *mov;
     float* resa, * resmm, * resmov;
-    int r = readCSVFile(FILE_TO_READ, &data, &totalDays);
+
+    printf("Ucitavam podatke...\n");
+    int r = readCSVFiles(FOLDER_TO_READ, &data, &totalDays);
     if (r != 0) {
         printf("Nisam uspio ucitati podatke\n");
         return -1;
     }
+    printf("Ucitano je %u datoteka sa %llu redaka\n", data.numStocks, totalDays);
+    
     initCalcValues(data.days, totalDays);
 
     int opcija;
