@@ -17,7 +17,7 @@ int main(int argc, char** argv)
         printf("Nisam uspio ucitati podatke\n");
         return -1;
     }
-    printf("Ucitano je %u datoteka sa %llu redaka\n", data.numStocks, totalDays);
+    printf("Ucitano je %u datoteka sa %llu redaka\n\n", data.numStocks, totalDays);
     
     if (initCalcValues(&data, totalDays) != 0) {
         printf("Greska pri inicijalizaciji vrijednosti\n");
@@ -25,11 +25,12 @@ int main(int argc, char** argv)
     }
 
     int opcija;
-    printf("Odaberi aktivnost:\n1. distribucijski indeks\n2. momentum\n3. pomicni prosjek\n4. sve\n");
+    printf("Odaberi aktivnost:\n1. distribucijski indeks\n2. momentum\n3. pomicni prosjek\n4. sve\n5. izlaz\n");
     if (scanf("%d", &opcija) != 1) {
         printf("Greska pri citanju unosa\n");
         return -1;
     }
+    printf("\n");
     switch (opcija) {
         case 1:
             ad = prepareADIndex();
@@ -99,6 +100,9 @@ int main(int argc, char** argv)
                 printf("Pogreska u kalkulaciji pomicnog prosjeka\n");
                 return -1;
             }
+            break;
+        case 5:
+            printf("Program se gasi\n");
             break;
         default:
             printf("Ne postoji opcija %d\n", opcija);

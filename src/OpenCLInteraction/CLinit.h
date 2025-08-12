@@ -6,16 +6,20 @@
 
 #define NUM_PLATFORMS 5
 #define NUM_DEVICES 10
+#define INFO_STRING_SIZE 256
 
 #define KERNELS_FOLDER "..\\..\\..\\src\\kernels\\"
+#define COMPILED_PROGRAMS_FOLDER "compiled_GPU_programs\\"
 
 typedef struct clProgramData {
+	cl_program program;
 	cl_kernel kernel;
 	cl_mem inBuff;
 	cl_mem resBuff;
 	uint16_t offset;
 	char *kernelName;
-	cl_event event;
+	cl_event readEvent;
+	cl_event execEvent;
 }clProgramData;
 
 static cl_platform_id platform;
@@ -34,6 +38,10 @@ void destryoOCL();
 static int chooseDevice();
 
 static int kernelSetup(clProgramData *data, char *file);
+
+static int getGPUProgram(char* kernelFile, cl_program* program);
+
+cl_program *GetPpogramFromSource(char * ernelFile);
 
 static void printCLErrors(cl_program* program, size_t size);
 

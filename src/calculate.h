@@ -42,5 +42,6 @@ clProgramData* prepareMovingAverage();
 int resultMovingAverage(float* res);
 
 static int writeResults(float* res, int offset, char* prefix);
+static void cleanUpClProgramData(clProgramData data);
 
 #endif

@@ -38,7 +38,7 @@ float *enqueue(clProgramData *prog) {
 }
 
 int resultADIndex(float *res) {
-    clWaitForEvents(1, &adi.event);
+    clWaitForEvents(1, &adi.readEvent);
     res[0] = 0;
     for (int i = 1; i < totalDays; i++) {
         if (isnan(res[i])) {
@@ -50,6 +50,7 @@ int resultADIndex(float *res) {
     }
 
     int err = writeResults(res, 1, ADI_PREFIX);
+    cleanUpClProgramData(adi);
     return err;
 }
 
@@ -64,8 +65,9 @@ clProgramData *prepareMomentum() {
 }
 
 int resultMomentum(float *res) {
-    clWaitForEvents(1, &momentum.event);
+    clWaitForEvents(1, &momentum.readEvent);
     int err = writeResults(res, MOMEN_DAYS_OFFSET, MOMEN_PREFIX);
+    cleanUpClProgramData(momentum);
     return err;
 }
 
@@ -80,8 +82,9 @@ clProgramData *prepareMovingAverage() {
 }
 
 int resultMovingAverage(float *res) {
-    clWaitForEvents(1, &ma.event);
+    clWaitForEvents(1, &ma.readEvent);
     int err = writeResults(res, MA_DAYS_OFFSET, MA_PREFIX);
+    cleanUpClProgramData(ma);
     return err;
 }
 
@@ -113,4 +116,13 @@ static int writeResults(float *res, int offset, char *prefix) {
     }
     free(res);
     return 0;
+}
+
+static void cleanUpClProgramData(clProgramData data) {
+    clReleaseEvent(data.execEvent);
+    clReleaseEvent(data.readEvent);
+    clReleaseMemObject(data.inBuff);
+    clReleaseMemObject(data.resBuff);
+    clReleaseProgram(data.program);
+    clReleaseKernel(data.kernel);
 }

@@ -1,22 +1,36 @@
 #include "CLinit.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <windows.h>
 
 int initOCL() {
     cl_int clerr = CL_SUCCESS;
-
     int err = chooseDevice(&device, &platform);
     if (err != 0) return err;
 
-    cl_context_properties prop[3] = {CL_CONTEXT_PLATFORM, platform, 0};
+    char *info = malloc(INFO_STRING_SIZE);
+    clerr = clGetPlatformInfo(platform, CL_PLATFORM_NAME, INFO_STRING_SIZE, info, NULL);
+    if (clerr == CL_SUCCESS) {
+        printf("Odabrana platforma %s\n", info);
+    }
+    clerr = clGetPlatformInfo(platform, CL_PLATFORM_VERSION, INFO_STRING_SIZE, info, NULL);
+    if (clerr == CL_SUCCESS) {
+        printf("Podrzava OpenCl verziju %s\n", info);
+    }
+    clerr = clGetDeviceInfo(device, CL_DEVICE_NAME, INFO_STRING_SIZE, info, NULL);
+    if (clerr == CL_SUCCESS) {
+        printf("Odabran device %s\n", info);
+    }
+    free(info);
 
+    cl_context_properties prop[3] = {CL_CONTEXT_PLATFORM, platform, 0};
     context = clCreateContext(prop, 1, &device, NULL, NULL, &clerr);
     if (clerr != CL_SUCCESS) {
         printf("Nisam uspio napraviti kontekst\n");
         return 4;
     }
 
-    queue = clCreateCommandQueue(context, device, NULL, &clerr);
+    queue = clCreateCommandQueue(context, device, CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE, &clerr);
     if (clerr != CL_SUCCESS) {
         printf("Nisam uspio napraviti command queue\n");
         return 5;
@@ -41,6 +55,7 @@ int prepareKernel(TradingDay* trade, size_t daysCount, clProgramData* data, char
 
 void destryoOCL() {
     free(maxPerDim);
+    clReleaseCommandQueue(queue);
     clReleaseContext(context);
 }
 
@@ -50,7 +65,6 @@ static int chooseDevice() {
     cl_int clerr = CL_SUCCESS;
 
     clerr = clGetPlatformIDs(NUM_PLATFORMS, platforms, &numPlatforms);
-
     if (clerr != CL_SUCCESS) {
         printf("Nisam uspio dobiti ID platforme\n");
         return 1;
@@ -101,7 +115,6 @@ static int chooseDevice() {
     }
     
     maxPerDim = malloc(sizeof(size_t) * dim);
-
     clerr = clGetDeviceInfo(device, CL_DEVICE_MAX_WORK_ITEM_SIZES, sizeof(size_t) * dim, maxPerDim, NULL);
     if (clerr != CL_SUCCESS) {
         printf("Nisam uspio dobiti informacije device-a za velicine work grupa\n");
@@ -112,53 +125,18 @@ static int chooseDevice() {
 }
 
 static int kernelSetup(clProgramData *data, char *kernelFile) {
-    char filePath[256] = KERNELS_FOLDER;
-    strcat(filePath, kernelFile);
-
-    cl_program program;
-    FILE* f = NULL;
-    char* program_source;
-    size_t size;
     cl_int err = CL_SUCCESS;
 
-    f = fopen(filePath, "r");
-    if (f == NULL) {
-        printf("Nisam uspio otvoriti datoteku: %s\n", filePath);
-        return 7;
-    }
-
-    fseek(f, 0, SEEK_END);
-    size = ftell(f);
-    rewind(f);
-    program_source = malloc(size + 1);
-    if (program_source == NULL) {
-        printf("malloc je bacio gresku\n");
+    if (getGPUProgram(kernelFile, data->program) != 0) {
+        printf("Nisam uspio dobiti GPU program za datoteku %\n", kernelFile);
         return -1;
     }
-    fread(program_source, sizeof(char), size, f);
-    program_source[size] = '\0';
-    fclose(f);
 
-    program = clCreateProgramWithSource(context, 1, &program_source, &size, &err);
-    if (err != CL_SUCCESS) {
-        printf("Nisam uspio napraviti program\n");
-        return 8;
-    }
-
-    free(program_source);
-
-    err = clBuildProgram(program, 1, &device, NULL, NULL, NULL);
-    if (err != CL_SUCCESS) {
-        printCLErrors(&program, size);
-        return 9;
-    }
-
-    data->kernel = clCreateKernel(program, data->kernelName, &err);
+    data->kernel = clCreateKernel(data->program, data->kernelName, &err);
     if (err != CL_SUCCESS) {
         printf("Nisam uspio napraviti kernel\n");
         return 10;
     }
-
     err = clSetKernelArg(data->kernel, 0, sizeof(data->inBuff), &data->inBuff);
     if (err != CL_SUCCESS) {
         printf("Greska pri dodavanju argumenata kernelu: %d\n", err);
@@ -177,6 +155,73 @@ static int kernelSetup(clProgramData *data, char *kernelFile) {
     return 0;
 }
 
+static int getGPUProgram(char *kernelFile, cl_program *program) {
+    size_t count = 0;
+    WIN32_FIND_DATA fdata;
+    wchar_t path[2048];
+
+    HANDLE hFind = FindFirstFile(COMPILED_PROGRAMS_FOLDER, &fdata);
+    if (hFind == INVALID_HANDLE_VALUE) {
+        printf("Stvaram direktorij kompiliranih GPU programa: %s\n", COMPILED_PROGRAMS_FOLDER);
+        CreateDirectory(COMPILED_PROGRAMS_FOLDER, NULL);
+    }
+
+    sprintf(path, "%s%s*.cl", COMPILED_PROGRAMS_FOLDER, kernelFile);
+    hFind = FindFirstFile(path, &fdata);
+    if (hFind == INVALID_HANDLE_VALUE) {
+        program = GetPpogramFromSource(kernelFile);
+        if (program == NULL) {
+            FindClose(hFind);
+            return -1;
+        }
+    }
+    FindClose(hFind);
+    return 0;
+}
+
+cl_program *GetPpogramFromSource(char *kernelFile){
+    cl_int err = CL_SUCCESS;
+    cl_program *prog;
+    FILE *f = NULL;
+    char *program_source;
+    size_t size;
+    char filePath[256] = KERNELS_FOLDER;
+    strcat(filePath, kernelFile);
+    
+    f = fopen(filePath, "r");
+    if (f == NULL) {
+        printf("Nisam uspio otvoriti datoteku izvornog koda: %s\n", filePath);
+        return 7;
+    }
+
+    fseek(f, 0, SEEK_END);
+    size = ftell(f);
+    rewind(f);
+    program_source = malloc(size + 1);
+    if (program_source == NULL) {
+        printf("malloc je bacio gresku\n");
+        return -1;
+    }
+    fread(program_source, sizeof(char), size, f);
+    program_source[size] = '\0';
+    fclose(f);
+
+    prog = clCreateProgramWithSource(context, 1, &program_source, &size, &err);
+    if (err != CL_SUCCESS) {
+        printf("Nisam uspio napraviti program\n");
+        return 8;
+    }
+
+    free(program_source);
+
+    err = clBuildProgram(prog, 1, &device, NULL, NULL, NULL);
+    if (err != CL_SUCCESS) {
+        printCLErrors(&prog, size);
+        return 9;
+    }
+    return prog;
+}
+
 static void printCLErrors(cl_program *program, size_t size) {
     clGetProgramBuildInfo(*program, device, CL_PROGRAM_BUILD_LOG, 0, NULL, &size);
     char* program_log = malloc(size + 1);
@@ -193,7 +238,8 @@ static void printCLErrors(cl_program *program, size_t size) {
 float* execute(size_t size, clProgramData *data) {
     cl_int err = CL_SUCCESS;
 
-    err = clEnqueueNDRangeKernel(queue, data->kernel, 1, NULL, &size, NULL, 0, NULL, NULL);
+    err = clEnqueueNDRangeKernel(queue, data->kernel, 1, NULL, &size, NULL,
+        0, NULL, &data->execEvent);
     if (err != CL_SUCCESS) {
         printf("Greska pri stavljanju kernela u queue %d\n", err);
         return NULL;
@@ -204,7 +250,8 @@ float* execute(size_t size, clProgramData *data) {
         printf("malloc je bacio gresku\n");
         return NULL;
     }
-    err = clEnqueueReadBuffer(queue, data->resBuff, CL_FALSE, 0, size * sizeof(float), res, 0, NULL, &data->event);
+    err = clEnqueueReadBuffer(queue, data->resBuff, CL_FALSE, 0, size * sizeof(float), res,
+        1, &data->execEvent, &data->readEvent);
     if (err != CL_SUCCESS) {
         printf("Greska pri citanju buffera\n");
         return NULL;
