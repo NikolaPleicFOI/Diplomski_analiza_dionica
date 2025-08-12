@@ -41,9 +41,11 @@ static int kernelSetup(clProgramData *data, char *file);
 
 static int getGPUProgram(char* kernelFile, cl_program* program);
 
-cl_program *GetPpogramFromSource(char * ernelFile);
-
+static int getProgramFromSource(char* kernelFile, cl_program* prog);
 static void printCLErrors(cl_program* program, size_t size);
+static int storeBinaryProgram(cl_program prog, char* path);
+static int getProgramFromBinary(char* binPath, cl_program* prog);
+
 
 float* execute(size_t size, clProgramData *data);
 

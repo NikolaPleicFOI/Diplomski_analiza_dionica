@@ -127,14 +127,14 @@ static int chooseDevice() {
 static int kernelSetup(clProgramData *data, char *kernelFile) {
     cl_int err = CL_SUCCESS;
 
-    if (getGPUProgram(kernelFile, data->program) != 0) {
-        printf("Nisam uspio dobiti GPU program za datoteku %\n", kernelFile);
+    if (getGPUProgram(kernelFile, &data->program) != 0) {
+        printf("Nisam uspio dobiti GPU program za datoteku %s\n", kernelFile);
         return -1;
     }
 
     data->kernel = clCreateKernel(data->program, data->kernelName, &err);
     if (err != CL_SUCCESS) {
-        printf("Nisam uspio napraviti kernel\n");
+        printf("Nisam uspio napraviti kernel, greska %d\n", err);
         return 10;
     }
     err = clSetKernelArg(data->kernel, 0, sizeof(data->inBuff), &data->inBuff);
@@ -158,30 +158,42 @@ static int kernelSetup(clProgramData *data, char *kernelFile) {
 static int getGPUProgram(char *kernelFile, cl_program *program) {
     size_t count = 0;
     WIN32_FIND_DATA fdata;
-    wchar_t path[2048];
-
-    HANDLE hFind = FindFirstFile(COMPILED_PROGRAMS_FOLDER, &fdata);
-    if (hFind == INVALID_HANDLE_VALUE) {
-        printf("Stvaram direktorij kompiliranih GPU programa: %s\n", COMPILED_PROGRAMS_FOLDER);
-        CreateDirectory(COMPILED_PROGRAMS_FOLDER, NULL);
+    char *path = malloc(512);
+    if (path == NULL) {
+        printf("malloc je bacio gresku\n");
+        return -1;
     }
+    CreateDirectory(COMPILED_PROGRAMS_FOLDER, NULL);
 
-    sprintf(path, "%s%s*.cl", COMPILED_PROGRAMS_FOLDER, kernelFile);
-    hFind = FindFirstFile(path, &fdata);
+    sprintf(path, "%s%s", COMPILED_PROGRAMS_FOLDER, kernelFile);
+    HANDLE hFind = FindFirstFile(path, &fdata);
     if (hFind == INVALID_HANDLE_VALUE) {
-        program = GetPpogramFromSource(kernelFile);
-        if (program == NULL) {
+        printf("Nema vec spremljenih binary-a, idem buildati\n");
+        if (getProgramFromSource(kernelFile, program) != 0) {
             FindClose(hFind);
+            free(path);
             return -1;
+        }
+        if (storeBinaryProgram(*program, path) != 0) {
+            printf("Nisam uspio spremiti binary GPU programa\n");
+            free(path);
+            return -1;
+        }
+        printf("Zapisao binary programa u %s\n", path);
+    }
+    else {
+        printf("Pronasao binary, ucitavam iz %s\n", path);
+        if(getProgramFromBinary(path, program) != 0){
+            printf("Nisam uspio ucitati program iz binary-a %s\n", path);
         }
     }
     FindClose(hFind);
+    free(path);
     return 0;
 }
 
-cl_program *GetPpogramFromSource(char *kernelFile){
+static int getProgramFromSource(char *kernelFile, cl_program *prog){
     cl_int err = CL_SUCCESS;
-    cl_program *prog;
     FILE *f = NULL;
     char *program_source;
     size_t size;
@@ -206,7 +218,7 @@ cl_program *GetPpogramFromSource(char *kernelFile){
     program_source[size] = '\0';
     fclose(f);
 
-    prog = clCreateProgramWithSource(context, 1, &program_source, &size, &err);
+    *prog = clCreateProgramWithSource(context, 1, &program_source, &size, &err);
     if (err != CL_SUCCESS) {
         printf("Nisam uspio napraviti program\n");
         return 8;
@@ -214,10 +226,75 @@ cl_program *GetPpogramFromSource(char *kernelFile){
 
     free(program_source);
 
-    err = clBuildProgram(prog, 1, &device, NULL, NULL, NULL);
+    err = clBuildProgram(*prog, 1, &device, NULL, NULL, NULL);
     if (err != CL_SUCCESS) {
-        printCLErrors(&prog, size);
+        printCLErrors(prog, size);
         return 9;
+    }
+    return 0;
+}
+
+static int storeBinaryProgram(cl_program prog, char *path) {
+    cl_int err = CL_SUCCESS;
+    size_t binSize;
+    err = clGetProgramInfo(prog, CL_PROGRAM_BINARY_SIZES, sizeof(size_t), &binSize, NULL);
+    if (err != CL_SUCCESS) return -1;
+
+    unsigned char** binary = malloc(sizeof(unsigned char*));
+    if (binary == NULL) {
+        printf("malloc je bacio gresku\n");
+        return -1;
+    }
+    binary[0] = malloc(binSize);
+    if (binary[0] == NULL) {
+        printf("malloc je bacio gresku\n");
+        return -1;
+    }
+
+    err = clGetProgramInfo(prog, CL_PROGRAM_BINARIES, binSize, binary, NULL);
+
+    FILE* f = NULL;
+    f = fopen(path, "w");
+    if (f == NULL) {
+        printf("Nisam uspio otvoriti datoteku za pisanje:%s\n", path);
+        return -1;
+    }
+    fwrite(binary[0], sizeof(char), binSize, f);
+    fflush(f);
+    fclose(f);
+    free(binary[0]);
+    return 0;
+}
+
+static int getProgramFromBinary(char* binPath, cl_program *prog) {
+    size_t binSize;
+    char *binary;
+
+    FILE* f = NULL;
+    f = fopen(binPath, "r");
+    if (f == NULL) {
+        printf("Nisam uspio otvoriti datoteku sa GPU binary-em %s\n", binPath);
+        return -1;
+    }
+    fseek(f, 0, SEEK_END);
+    binSize = ftell(f);
+    rewind(f);
+
+    binary = malloc(binSize + 1);
+    if (binary == NULL) {
+        printf("malloc je bacio gresku\n");
+        return -1;
+    }
+    fread(binary, sizeof(char), binSize, f);
+    binary[binSize] = '\0';
+    fclose(f);
+    
+    cl_int err;
+    *prog = clCreateProgramWithBinary(context, 1, &device, &binSize, &binary, NULL, &err);
+    free(binary);
+    if (err != CL_SUCCESS) {
+        printf("dogodila se greska %d\n", err);
+        return -1;
     }
     return prog;
 }

@@ -81,7 +81,7 @@ static inline size_t getStockCount(const char *folder) {
 static inline char **getFiles(const char *folder, uint16_t numFiles) {
 	char** files = malloc(numFiles * sizeof(char*));
 	WIN32_FIND_DATA fdata;
-	wchar_t path[2048];
+	char path[2048];
 
 	sprintf(path, "%s*.csv", folder);
 	HANDLE hFind = FindFirstFile(path, &fdata);
