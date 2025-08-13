@@ -34,19 +34,19 @@ static cl_command_queue queue;
 
 int initOCL();
 
-int prepareKernel(TradingDay* days, size_t daysCount, clProgramData* data, char* file);
+int prepareKernel(TradingDay* trade, size_t daysCount, clProgramData* data, char* kernelFile);
 
 void destryoOCL();
 
 static int chooseDevice();
 
-static int kernelSetup(clProgramData *data, char *file);
+static int kernelSetup(clProgramData* data, char* kernelFile);
 
-static int getGPUProgram(char* kernelFile, clProgramData* program);
+static int getGPUProgram(char* kernelFile, clProgramData* progData);
 
 static int getProgramFromSource(char* kernelFile, cl_program* prog);
 static void printCLErrors(cl_program* program, size_t size);
-int storeBinaryProgram(cl_program *data, char* path);
+int storeBinaryProgram(cl_program* prog, char* path);
 static int getProgramFromBinary(char* binPath, cl_program* prog);
 
 

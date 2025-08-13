@@ -280,7 +280,7 @@ static int getProgramFromBinary(char* binPath, cl_program *prog) {
     binSize = ftell(f);
     rewind(f);
 
-    binary = malloc(binSize + 1);
+    binary = malloc(binSize * 2);
     if (binary == NULL) {
         printf("malloc je bacio gresku\n");
         return -1;
@@ -296,7 +296,7 @@ static int getProgramFromBinary(char* binPath, cl_program *prog) {
         printf("dogodila se greska %d\n", err);
         return -1;
     }
-    return prog;
+    return 0;
 }
 
 static void printCLErrors(cl_program *program, size_t size) {

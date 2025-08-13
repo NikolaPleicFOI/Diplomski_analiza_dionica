@@ -84,7 +84,7 @@ int main(int argc, char** argv)
                 printf("Pogreska u pripremi kalkulacije pomicnog prosjeka\n");
                 return -1;
             }
-            clUnloadCompiler();
+            //clUnloadCompiler();
             float *resad = enqueue(ad);
             float *resmm = enqueue(mm);
             float *resmov = enqueue(mov);
