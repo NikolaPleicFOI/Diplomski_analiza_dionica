@@ -1,6 +1,7 @@
 #ifndef OPENCL_INIT_NPLEIC
 #define OPENCL_INIT_NPLEIC
 
+#include <stdbool.h>
 #include <CL/cl.h>
 #include "../CSVreading.h"
 
@@ -10,6 +11,7 @@
 
 #define KERNELS_FOLDER "..\\..\\..\\src\\kernels\\"
 #define COMPILED_PROGRAMS_FOLDER "compiled_GPU_programs\\"
+#define KERNEL_FILE_EXTENTION ".cl"
 
 typedef struct clProgramData {
 	cl_program program;
@@ -20,6 +22,7 @@ typedef struct clProgramData {
 	char *kernelName;
 	cl_event readEvent;
 	cl_event execEvent;
+	bool binaryPostoji;
 }clProgramData;
 
 static cl_platform_id platform;
@@ -39,11 +42,11 @@ static int chooseDevice();
 
 static int kernelSetup(clProgramData *data, char *file);
 
-static int getGPUProgram(char* kernelFile, cl_program* program);
+static int getGPUProgram(char* kernelFile, clProgramData* program);
 
 static int getProgramFromSource(char* kernelFile, cl_program* prog);
 static void printCLErrors(cl_program* program, size_t size);
-static int storeBinaryProgram(cl_program prog, char* path);
+int storeBinaryProgram(cl_program *data, char* path);
 static int getProgramFromBinary(char* binPath, cl_program* prog);
 
 

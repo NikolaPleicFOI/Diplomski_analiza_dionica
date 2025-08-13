@@ -50,6 +50,9 @@ int resultADIndex(float *res) {
     }
 
     int err = writeResults(res, 1, ADI_PREFIX);
+    if (!adi.binaryPostoji) {
+        storeBinaryProgram(&adi.program, COMPILED_PROGRAMS_FOLDER ADI_KERNEL_NAME KERNEL_FILE_EXTENTION);
+    }
     cleanUpClProgramData(adi);
     return err;
 }
@@ -67,6 +70,9 @@ clProgramData *prepareMomentum() {
 int resultMomentum(float *res) {
     clWaitForEvents(1, &momentum.readEvent);
     int err = writeResults(res, MOMEN_DAYS_OFFSET, MOMEN_PREFIX);
+    if (!adi.binaryPostoji) {
+        storeBinaryProgram(&adi.program, COMPILED_PROGRAMS_FOLDER MOMEN_KERNEL_NAME KERNEL_FILE_EXTENTION);
+    }
     cleanUpClProgramData(momentum);
     return err;
 }
@@ -84,6 +90,9 @@ clProgramData *prepareMovingAverage() {
 int resultMovingAverage(float *res) {
     clWaitForEvents(1, &ma.readEvent);
     int err = writeResults(res, MA_DAYS_OFFSET, MA_PREFIX);
+    if (!adi.binaryPostoji) {
+        storeBinaryProgram(&adi.program, COMPILED_PROGRAMS_FOLDER MA_KERNEL_NAME KERNEL_FILE_EXTENTION);
+    }
     cleanUpClProgramData(ma);
     return err;
 }
@@ -124,5 +133,5 @@ static void cleanUpClProgramData(clProgramData data) {
     clReleaseMemObject(data.inBuff);
     clReleaseMemObject(data.resBuff);
     clReleaseProgram(data.program);
-    clReleaseKernel(data.kernel);
+    //clReleaseKernel(data.kernel);
 }
