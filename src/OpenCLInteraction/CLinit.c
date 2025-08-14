@@ -55,6 +55,7 @@ int prepareKernel(TradingDay* trade, size_t daysCount, clProgramData* data, char
 
 void destryoOCL() {
     free(maxPerDim);
+    clReleaseCommandQueue(queue);
     clReleaseContext(context);
 }
 
