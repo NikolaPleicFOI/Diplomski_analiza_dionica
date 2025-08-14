@@ -290,15 +290,19 @@ static int getProgramFromBinary(char* binPath, cl_program *prog) {
         return -1;
     }
     fread(binary, sizeof(char), binSize, f);
-    //binary[binSize] = '\0';
     fclose(f);
-    //binSize = binSize + 1;
     
     cl_int err;
     *prog = clCreateProgramWithBinary(context, 1, &device, &binSize, &binary, NULL, &err);
     free(binary);
     if (err != CL_SUCCESS) {
         printf("Stvaranje programa nije uspjelo, error %d\n", err);
+        return -1;
+    }
+
+    err = clBuildProgram(*prog, 1, &device, NULL, NULL, NULL);
+    if (err != CL_SUCCESS) {
+        printf("Buildanje programa nije uspjelo, error %d\n", err);
         return -1;
     }
     return 0;
