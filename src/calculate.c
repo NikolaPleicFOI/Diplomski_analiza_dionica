@@ -23,7 +23,7 @@ clProgramData *prepareADIndex() {
     
     int err = prepareKernel(data->trades, totalDays, &adi, kernel);
     if (err != 0) {
-        printf("Dogodila se graska %u\n", err);
+        printf("Dogodila se graska %d\n", err);
         return NULL;
     }
     return &adi;
@@ -51,7 +51,7 @@ int resultADIndex(float *res) {
 
     int err = writeResults(res, 1, ADI_PREFIX);
     if (!adi.binaryPostoji) {
-        storeBinaryProgram(&adi.program, COMPILED_PROGRAMS_FOLDER ADI_KERNEL_NAME KERNEL_FILE_EXTENTION);
+        storeBinaryProgram(&adi.program, COMPILED_PROGRAMS_FOLDER CLV_FILE);
     }
     cleanUpClProgramData(adi);
     return err;
@@ -71,7 +71,7 @@ int resultMomentum(float *res) {
     clWaitForEvents(1, &momentum.readEvent);
     int err = writeResults(res, MOMEN_DAYS_OFFSET, MOMEN_PREFIX);
     if (!momentum.binaryPostoji) {
-        storeBinaryProgram(&momentum.program, COMPILED_PROGRAMS_FOLDER MOMEN_KERNEL_NAME KERNEL_FILE_EXTENTION);
+        storeBinaryProgram(&momentum.program, COMPILED_PROGRAMS_FOLDER MOMEN_FILE);
     }
     cleanUpClProgramData(momentum);
     return err;
@@ -91,7 +91,7 @@ int resultMovingAverage(float *res) {
     clWaitForEvents(1, &ma.readEvent);
     int err = writeResults(res, MA_DAYS_OFFSET, MA_PREFIX);
     if (!ma.binaryPostoji) {
-        storeBinaryProgram(&ma.program, COMPILED_PROGRAMS_FOLDER MA_KERNEL_NAME KERNEL_FILE_EXTENTION);
+        storeBinaryProgram(&ma.program, COMPILED_PROGRAMS_FOLDER MA_FILE);
     }
     cleanUpClProgramData(ma);
     return err;

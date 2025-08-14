@@ -5,7 +5,7 @@
 
 int initOCL() {
     cl_int clerr = CL_SUCCESS;
-    int err = chooseDevice(&device, &platform);
+    int err = chooseDevice();
     if (err != 0) return err;
 
     char *info = malloc(INFO_STRING_SIZE);
@@ -83,11 +83,11 @@ static int chooseDevice() {
         cl_bool available;
         cl_ulong memsize;
         for (int j = 0; j < numDevices; j++){
-            clerr = clGetDeviceInfo(clDevices[j], CL_DEVICE_AVAILABLE, sizeof available, &available, NULL);
-            if (clerr != CL_SUCCESS || available == CL_FALSE) return 3;
+            clerr = clGetDeviceInfo(clDevices[j], CL_DEVICE_AVAILABLE, sizeof (available), &available, NULL);
+            if (clerr != CL_SUCCESS || available == CL_FALSE) continue;
 
             //Dohvati device sa najvise memorije
-            clerr = clGetDeviceInfo(clDevices[j], CL_DEVICE_GLOBAL_MEM_SIZE, sizeof memsize, &memsize, NULL);
+            clerr = clGetDeviceInfo(clDevices[j], CL_DEVICE_GLOBAL_MEM_SIZE, sizeof (memsize), &memsize, NULL);
             if (clerr != CL_SUCCESS) {
                 printf("Nisam uspio dobiti informacije device-a\n");
                 return 3;
@@ -180,7 +180,12 @@ static int getGPUProgram(char *kernelFile, clProgramData *progData) {
         progData->binaryPostoji = true;
         printf("Pronasao binary, ucitavam iz %s\n", path);
         if (getProgramFromBinary(path, &progData->program) != 0) {
-            printf("Nisam uspio ucitati program iz binary-a %s\n", path);
+            printf("Nisam uspio ucitati program iz binary-a, idem buildati iz izvornog koda\n");
+            if (getProgramFromSource(kernelFile, &progData->program) != 0) {
+                FindClose(hFind);
+                free(path);
+                return -1;
+            }
         }
     }
     FindClose(hFind);
@@ -280,20 +285,20 @@ static int getProgramFromBinary(char* binPath, cl_program *prog) {
     binSize = ftell(f);
     rewind(f);
 
-    binary = malloc(binSize * 2);
+    binary = malloc(binSize + 1);
     if (binary == NULL) {
         printf("malloc je bacio gresku\n");
         return -1;
     }
-    fread(binary, sizeof(char), binSize, f);
+    fread(binary, 1, binSize, f);
     binary[binSize] = '\0';
     fclose(f);
+    binSize = binSize + 1;
     
     cl_int err;
     *prog = clCreateProgramWithBinary(context, 1, &device, &binSize, &binary, NULL, &err);
     free(binary);
     if (err != CL_SUCCESS) {
-        printf("dogodila se greska %d\n", err);
         return -1;
     }
     return 0;
