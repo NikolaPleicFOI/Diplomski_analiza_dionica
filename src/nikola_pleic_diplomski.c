@@ -84,10 +84,10 @@ int main(int argc, char** argv)
                 printf("Pogreska u pripremi kalkulacije pomicnog prosjeka\n");
                 return -1;
             }
-            //clUnloadCompiler();
+            clUnloadCompiler();
             float *resad = enqueue(ad);
             float *resmm = enqueue(mm);
-            float *resmov = enqueue(mov);
+            float* resmov = enqueue(mov);
             if (resultADIndex(resad) != 0) {
                 printf("Pogreska u kalkulaciji A/D indeksa\n");
                 return -1;
