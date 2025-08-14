@@ -55,7 +55,6 @@ int prepareKernel(TradingDay* trade, size_t daysCount, clProgramData* data, char
 
 void destryoOCL() {
     free(maxPerDim);
-    clReleaseCommandQueue(queue);
     clReleaseContext(context);
 }
 
@@ -259,7 +258,7 @@ int storeBinaryProgram(cl_program *prog, char *path) {
     err = clGetProgramInfo(*prog, CL_PROGRAM_BINARIES, binSize, binary, NULL);
 
     FILE* f = NULL;
-    f = fopen(path, "w");
+    f = fopen(path, "wb");
     if (f == NULL) {
         printf("Nisam uspio otvoriti datoteku za pisanje:%s\n", path);
         return -1;
@@ -276,7 +275,7 @@ static int getProgramFromBinary(char* binPath, cl_program *prog) {
     char *binary;
 
     FILE* f = NULL;
-    f = fopen(binPath, "r");
+    f = fopen(binPath, "rb");
     if (f == NULL) {
         printf("Nisam uspio otvoriti datoteku sa GPU binary-em %s\n", binPath);
         return -1;
@@ -285,15 +284,15 @@ static int getProgramFromBinary(char* binPath, cl_program *prog) {
     binSize = ftell(f);
     rewind(f);
 
-    binary = malloc(binSize + 1);
+    binary = malloc(binSize);
     if (binary == NULL) {
         printf("malloc je bacio gresku\n");
         return -1;
     }
-    fread(binary, 1, binSize, f);
-    binary[binSize] = '\0';
+    fread(binary, sizeof(char), binSize, f);
+    //binary[binSize] = '\0';
     fclose(f);
-    binSize = binSize + 1;
+    //binSize = binSize + 1;
     
     cl_int err;
     *prog = clCreateProgramWithBinary(context, 1, &device, &binSize, &binary, NULL, &err);
