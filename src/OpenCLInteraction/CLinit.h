@@ -5,12 +5,14 @@
 #include <CL/cl.h>
 #include "../CSVreading.h"
 
-#define NUM_PLATFORMS 10
-#define NUM_DEVICES 20
+#define NUM_PLATFORMS 5
+#define NUM_DEVICES 10
 #define INFO_STRING_SIZE 256
 
 #define KERNELS_FOLDER "..\\..\\..\\src\\kernels\\"
 #define COMPILED_PROGRAMS_FOLDER "compiled_GPU_programs\\"
+
+#define CL_BUILD_OPTIONS "-cl-no-signed-zeros -Werror"
 
 typedef struct clProgramData {
 	cl_program program;

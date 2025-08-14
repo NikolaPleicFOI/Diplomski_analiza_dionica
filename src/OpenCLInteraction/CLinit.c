@@ -229,7 +229,7 @@ static int getProgramFromSource(char *kernelFile, cl_program *prog){
 
     free(program_source);
 
-    err = clBuildProgram(*prog, 1, &device, NULL, NULL, NULL);
+    err = clBuildProgram(*prog, 1, &device, CL_BUILD_OPTIONS, NULL, NULL);
     if (err != CL_SUCCESS) {
         printCLErrors(prog, size);
         return 9;
@@ -301,7 +301,7 @@ static int getProgramFromBinary(char* binPath, cl_program *prog) {
         return -1;
     }
 
-    err = clBuildProgram(*prog, 1, &device, NULL, NULL, NULL);
+    err = clBuildProgram(*prog, 1, &device, CL_BUILD_OPTIONS, NULL, NULL);
     if (err != CL_SUCCESS) {
         printf("Buildanje programa nije uspjelo, error %d\n", err);
         return -1;
