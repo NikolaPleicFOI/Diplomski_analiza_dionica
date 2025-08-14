@@ -128,9 +128,9 @@ static int writeResults(float *res, int offset, char *prefix) {
 }
 
 static void cleanUpClProgramData(clProgramData data) {
-    /*clReleaseEvent(data.execEvent);
+    clReleaseEvent(data.execEvent);
     clReleaseEvent(data.readEvent);
     clReleaseMemObject(data.inBuff);
     clReleaseMemObject(data.resBuff);
-    clReleaseProgram(data.program);*/
+    clReleaseProgram(data.program);
 }

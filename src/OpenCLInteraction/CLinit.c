@@ -180,7 +180,7 @@ static int getGPUProgram(char *kernelFile, clProgramData *progData) {
         progData->binaryPostoji = true;
         printf("Pronasao binary, ucitavam iz %s\n", path);
         if (getProgramFromBinary(path, &progData->program) != 0) {
-            printf("Nisam uspio ucitati program iz binary-a, idem buildati iz izvornog koda\n");
+            printf("Idem buildati iz izvornog koda\n");
             if (getProgramFromSource(kernelFile, &progData->program) != 0) {
                 FindClose(hFind);
                 free(path);
@@ -299,6 +299,7 @@ static int getProgramFromBinary(char* binPath, cl_program *prog) {
     *prog = clCreateProgramWithBinary(context, 1, &device, &binSize, &binary, NULL, &err);
     free(binary);
     if (err != CL_SUCCESS) {
+        printf("Stvaranje programa nije uspjelo, error %d\n", err);
         return -1;
     }
     return 0;
