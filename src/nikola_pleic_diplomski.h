@@ -1,6 +1,6 @@
 ﻿#ifndef NPLEIC
 #define NPLEIC
 
-#define FOLDER_TO_READ "..\\..\\..\\..\\podaci\\nasdaq\\"
+#define DATA_FOLDER "..\\..\\..\\..\\podaci\\nasdaq\\"
 
 #endif

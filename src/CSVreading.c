@@ -156,7 +156,7 @@ static inline int loadCSVData(FILE *file, ProgData *data, size_t *day, int num) 
 		d = &(data->days[*day]);
 	}
 	if (i != data->numDays[num]) {
-		printf("GRESKA! dan %u bi trebao imati &u dana, ali ima %u\n", num, data->numDays[num], i);
+		printf("GRESKA! datoteka %u bi trebao imati %u dana, ali ima %u\n", num, data->numDays[num], i);
 		return -1;
 	}
 	return 0;

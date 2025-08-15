@@ -86,6 +86,9 @@ static int chooseDevice() {
             clerr = clGetDeviceInfo(clDevices[j], CL_DEVICE_AVAILABLE, sizeof (available), &available, NULL);
             if (clerr != CL_SUCCESS || available == CL_FALSE) continue;
 
+            clerr = clGetDeviceInfo(clDevices[j], CL_DEVICE_COMPILER_AVAILABLE, sizeof(available), &available, NULL);
+            if (clerr != CL_SUCCESS || available == CL_FALSE) continue;
+
             //Dohvati device sa najvise memorije
             clerr = clGetDeviceInfo(clDevices[j], CL_DEVICE_GLOBAL_MEM_SIZE, sizeof (memsize), &memsize, NULL);
             if (clerr != CL_SUCCESS) {

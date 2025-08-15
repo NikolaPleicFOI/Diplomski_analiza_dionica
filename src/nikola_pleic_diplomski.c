@@ -12,7 +12,7 @@ int main(int argc, char** argv)
     float* resa, * resmm, * resmov;
 
     printf("Ucitavam podatke...\n");
-    int r = readCSVFiles(FOLDER_TO_READ, &data, &totalDays);
+    int r = readCSVFiles(DATA_FOLDER, &data, &totalDays);
     if (r != 0) {
         printf("Nisam uspio ucitati podatke\n");
         return -1;

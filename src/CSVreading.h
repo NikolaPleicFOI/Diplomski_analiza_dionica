@@ -5,7 +5,6 @@
 #include <stdio.h>
 
 #define MAX_STOCKS 10
-#define DATA_FOLDER "..\\..\\..\\..\\podaci\\nasdaq\\"
 
 #define LINE_LENGTH 128
 #define STOCK_NAME_LENGTH 8

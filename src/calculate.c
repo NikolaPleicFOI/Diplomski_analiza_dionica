@@ -112,7 +112,7 @@ static int writeResults(float *res, int offset, char *prefix) {
             return -1;
         }
         int end = curr + data->numDays[i];
-        curr += offset;
+        curr += (offset + 1);
         int j = curr;
 
         while (j < end) {
