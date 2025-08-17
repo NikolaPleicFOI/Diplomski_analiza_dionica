@@ -6,7 +6,7 @@ typedef struct TradingDay {
 	uint volume;
 }TradingDay;
 
-kernel void momentum(global TradingDay *trade, global float *res, ushort offset){
+kernel void momentum(constant TradingDay *trade, global float *res, ushort offset){
 	uint i = get_global_id(0);
 	res[i] = trade[i].close - trade[i - offset].close;
 }

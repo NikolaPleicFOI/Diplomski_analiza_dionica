@@ -246,7 +246,10 @@ int storeBinaryProgram(cl_program *prog, char *path) {
     size_t binSize;
 
     err = clGetProgramInfo(*prog, CL_PROGRAM_BINARY_SIZES, sizeof(size_t), &binSize, NULL);
-    if (err != CL_SUCCESS) return -1;
+    if (err != CL_SUCCESS) {
+        printf("Nisam uspio dobiti velicine binarnih podataka programa\n");
+        return -1;
+    }
 
     unsigned char** binary = malloc(sizeof(unsigned char*));
     if (binary == NULL) {
@@ -260,6 +263,10 @@ int storeBinaryProgram(cl_program *prog, char *path) {
     }
 
     err = clGetProgramInfo(*prog, CL_PROGRAM_BINARIES, binSize, binary, NULL);
+    if (err != CL_SUCCESS) {
+        printf("Nisam uspio dobiti binarnie podatake programa\n");
+        return -1;
+    }
 
     FILE* f = NULL;
     f = fopen(path, "wb");
@@ -328,8 +335,7 @@ static void printCLErrors(cl_program *program, size_t size) {
 float* execute(size_t size, clProgramData *data) {
     cl_int err = CL_SUCCESS;
 
-    err = clEnqueueNDRangeKernel(queue, data->kernel, 1, NULL, &size, NULL,
-        0, NULL, &data->execEvent);
+    err = clEnqueueNDRangeKernel(queue, data->kernel, 1, NULL, &size, NULL, 0, NULL, &data->execEvent);
     if (err != CL_SUCCESS) {
         printf("Greska pri stavljanju kernela u queue %d\n", err);
         return NULL;
@@ -340,8 +346,7 @@ float* execute(size_t size, clProgramData *data) {
         printf("malloc je bacio gresku\n");
         return NULL;
     }
-    err = clEnqueueReadBuffer(queue, data->resBuff, CL_FALSE, 0, size * sizeof(float), res,
-        1, &data->execEvent, &data->readEvent);
+    err = clEnqueueReadBuffer(queue, data->resBuff, CL_FALSE, 0, size * sizeof(float), res, 1, &data->execEvent, &data->readEvent);
     if (err != CL_SUCCESS) {
         printf("Greska pri citanju buffera\n");
         return NULL;

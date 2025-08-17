@@ -6,7 +6,7 @@ typedef struct TradingDay {
 	uint volume;
 }TradingDay;
 
-kernel void MA(global TradingDay *trade, global float *res, ushort offset){
+kernel void MA(constant TradingDay *trade, global float *res, ushort offset){
 	uint i = get_global_id(0);
 	float total = 0;
 	for(int j = 0; j < offset ; j++){
