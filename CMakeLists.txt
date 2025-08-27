@@ -17,7 +17,7 @@ add_library(Utils STATIC ${projFolder}/CSVreading.c ${projFolder}/calculate.c ${
 
 target_link_libraries(Utils PUBLIC OpenCL::OpenCL)
 
-add_executable(${PROJECT_NAME} ${projFolder}/nikola_pleic_diplomski.c)
+add_executable(${PROJECT_NAME} WIN32 ${projFolder}/nikola_pleic_diplomski.c)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE Utils)
 

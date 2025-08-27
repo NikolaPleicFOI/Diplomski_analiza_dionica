@@ -41,7 +41,6 @@ int initOCL() {
 
 int prepareKernel(TradingDay* trade, size_t daysCount, clProgramData* data, char* kernelFile) {
     cl_int clerr = CL_SUCCESS;
-
     data->inBuff = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, sizeof(TradingDay) * daysCount, trade, &clerr);
     data->resBuff = clCreateBuffer(context, CL_MEM_WRITE_ONLY, daysCount * sizeof(float), NULL, &clerr);
     if (clerr != CL_SUCCESS) {
@@ -127,6 +126,14 @@ static int chooseDevice() {
     return 0;
 }
 
+char* getKernelFolder() {
+    return kernels_dir;
+}
+
+void setKernelFolder(char* newFolder) {
+    kernels_dir = newFolder;
+}
+
 static int kernelSetup(clProgramData *data, char *kernelFile) {
     cl_int err = CL_SUCCESS;
 
@@ -201,7 +208,9 @@ static int getProgramFromSource(char *kernelFile, cl_program *prog){
     FILE *f = NULL;
     char *program_source;
     size_t size;
-    char filePath[256] = KERNELS_FOLDER;
+    char filePath[256];
+    strcpy(filePath, kernels_dir);
+    strcat(filePath, "\\");
     strcat(filePath, kernelFile);
     
     f = fopen(filePath, "r");
@@ -251,18 +260,13 @@ int storeBinaryProgram(cl_program *prog, char *path) {
         return -1;
     }
 
-    unsigned char** binary = malloc(sizeof(unsigned char*));
+    unsigned char *binary = malloc(binSize);
     if (binary == NULL) {
         printf("malloc je bacio gresku\n");
         return -1;
     }
-    binary[0] = malloc(binSize);
-    if (binary[0] == NULL) {
-        printf("malloc je bacio gresku\n");
-        return -1;
-    }
 
-    err = clGetProgramInfo(*prog, CL_PROGRAM_BINARIES, binSize, binary, NULL);
+    err = clGetProgramInfo(*prog, CL_PROGRAM_BINARIES, sizeof(unsigned char*), &binary, NULL);
     if (err != CL_SUCCESS) {
         printf("Nisam uspio dobiti binarnie podatake programa\n");
         return -1;
@@ -274,10 +278,9 @@ int storeBinaryProgram(cl_program *prog, char *path) {
         printf("Nisam uspio otvoriti datoteku za pisanje:%s\n", path);
         return -1;
     }
-    fwrite(binary[0], sizeof(char), binSize, f);
-    fflush(f);
+    fwrite(binary, sizeof(unsigned char), binSize, f);
     fclose(f);
-    free(binary[0]);
+    free(binary);
     return 0;
 }
 
@@ -313,7 +316,7 @@ static int getProgramFromBinary(char* binPath, cl_program *prog) {
 
     err = clBuildProgram(*prog, 1, &device, CL_BUILD_OPTIONS, NULL, NULL);
     if (err != CL_SUCCESS) {
-        printf("Buildanje programa nije uspjelo, error %d\n", err);
+        printCLErrors(prog, binSize);
         return -1;
     }
     return 0;

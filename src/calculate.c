@@ -8,7 +8,6 @@ int initCalcValues(ProgData *progData, size_t daysCount) {
     totalDays = daysCount;
     data = progData;
 
-    CreateDirectory(OUT_FOLDER, NULL);
     adi.offset = 0;
     adi.kernelName = ADI_KERNEL_NAME;
     momentum.offset = MOMEN_DAYS_OFFSET;
@@ -18,9 +17,17 @@ int initCalcValues(ProgData *progData, size_t daysCount) {
     return 0;
 }
 
+void setOutDataFolder(char* newFolder) {
+    out_data_folder = newFolder;
+}
+
+char* getOutDataFolder() {
+    return out_data_folder;
+}
+
 clProgramData *prepareADIndex() {
     char *kernel = CLV_FILE;
-    
+
     int err = prepareKernel(data->trades, totalDays, &adi, kernel);
     if (err != 0) {
         printf("Dogodila se graska %d\n", err);
@@ -53,7 +60,6 @@ int resultADIndex(float *res) {
     if (!adi.binaryPostoji) {
         storeBinaryProgram(&adi.program, COMPILED_PROGRAMS_FOLDER CLV_FILE);
     }
-    cleanUpClProgramData(adi);
     return err;
 }
 
@@ -73,7 +79,6 @@ int resultMomentum(float *res) {
     if (!momentum.binaryPostoji) {
         storeBinaryProgram(&momentum.program, COMPILED_PROGRAMS_FOLDER MOMEN_FILE);
     }
-    cleanUpClProgramData(momentum);
     return err;
 }
 
@@ -93,15 +98,15 @@ int resultMovingAverage(float *res) {
     if (!ma.binaryPostoji) {
         storeBinaryProgram(&ma.program, COMPILED_PROGRAMS_FOLDER MA_FILE);
     }
-    cleanUpClProgramData(ma);
     return err;
 }
 
 static int writeResults(float *res, int offset, char *prefix) {
-    char* filename[FILENAME_MAX];
+    char filename[FILENAME_MAX];
     uint32_t curr = 0;
     for (int i = 0; i < data->numStocks; i++) {
-        strcpy(filename, OUT_FOLDER "\\");
+        strcpy(filename, out_data_folder);
+        strcat(filename, "\\");
         strcat(filename, prefix);
         strcat(filename, data->stocks[i]);
         strcat(filename, OUT_FILE_EXTENTION);
@@ -123,11 +128,10 @@ static int writeResults(float *res, int offset, char *prefix) {
         fflush(f);
         fclose(f);
     }
-    free(res);
     return 0;
 }
 
-static void cleanUpClProgramData(clProgramData data) {
+void cleanUpClProgramData(clProgramData data) {
     clReleaseEvent(data.execEvent);
     clReleaseEvent(data.readEvent);
     clReleaseMemObject(data.inBuff);

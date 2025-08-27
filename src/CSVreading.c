@@ -58,9 +58,9 @@ int readCSVFiles(const char *folderName, ProgData *data, size_t *totalDays) {
 static inline size_t getStockCount(const char *folder) {
 	size_t count = 0;
 	WIN32_FIND_DATA fdata;
-	wchar_t path[2048];
+	wchar_t path[FILENAME_MAX];
 	
-	sprintf(path, "%s*.csv", folder);
+	sprintf(path, "%s\\*.csv", folder);
 	HANDLE hFind = FindFirstFile(path, &fdata);
 
 	if (hFind  == INVALID_HANDLE_VALUE){
@@ -80,10 +80,12 @@ static inline size_t getStockCount(const char *folder) {
 
 static inline char **getFiles(const char *folder, uint16_t numFiles) {
 	char** files = malloc(numFiles * sizeof(char*));
-	WIN32_FIND_DATA fdata;
-	char path[2048];
+	if (files == NULL) return NULL;
 
-	sprintf(path, "%s*.csv", folder);
+	WIN32_FIND_DATA fdata;
+	char path[FILENAME_MAX];
+
+	sprintf(path, "%s\\*.csv", folder);
 	HANDLE hFind = FindFirstFile(path, &fdata);
 
 	int i = 0;
@@ -96,6 +98,7 @@ static inline char **getFiles(const char *folder, uint16_t numFiles) {
 		files[i] = malloc(FILENAME_MAX);
 		if (files[i] == NULL) return NULL;
 		strcpy(files[i], folder);
+		strcat(files[i], "\\");
 		strcat(files[i], fdata.cFileName);
 		i++;
 	} while (FindNextFile(hFind, &fdata) && (i < MAX_STOCKS));

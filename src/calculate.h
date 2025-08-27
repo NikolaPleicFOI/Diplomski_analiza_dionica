@@ -22,12 +22,16 @@
 #define MA_DAYS_OFFSET 5
 #define MA_KERNEL_NAME "MA"
 
-static clProgramData adi;
-static clProgramData momentum;
-static clProgramData ma;
+clProgramData adi;
+clProgramData momentum;
+clProgramData ma;
 
 static size_t totalDays;
 static ProgData *data;
+static char *out_data_folder = OUT_FOLDER;
+
+void setOutDataFolder(char* newFolder);
+char* getOutDataFolder();
 
 int initCalcValues(ProgData *data, size_t daysCount);
 float* enqueue(clProgramData *prog);
@@ -42,6 +46,6 @@ clProgramData* prepareMovingAverage();
 int resultMovingAverage(float* res);
 
 static int writeResults(float* res, int offset, char* prefix);
-static void cleanUpClProgramData(clProgramData data);
+void cleanUpClProgramData(clProgramData data);
 
 #endif

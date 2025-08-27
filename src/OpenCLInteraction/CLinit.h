@@ -9,7 +9,7 @@
 #define NUM_DEVICES 10
 #define INFO_STRING_SIZE 256
 
-#define KERNELS_FOLDER "..\\..\\..\\src\\kernels\\"
+#define KERNELS_FOLDER "..\\..\\..\\src\\kernels"
 #define COMPILED_PROGRAMS_FOLDER "compiled_GPU_programs\\"
 
 #define CL_BUILD_OPTIONS "-cl-no-signed-zeros -Werror"
@@ -32,6 +32,7 @@ static size_t maxItems;
 static size_t *maxPerDim;
 static cl_context context;
 static cl_command_queue queue;
+static char* kernels_dir = KERNELS_FOLDER;
 
 int initOCL();
 
@@ -41,6 +42,8 @@ void destryoOCL();
 
 static int chooseDevice();
 
+char* getKernelFolder();
+void setKernelFolder(char* newFolder);
 static int kernelSetup(clProgramData* data, char* kernelFile);
 
 static int getGPUProgram(char* kernelFile, clProgramData* progData);
