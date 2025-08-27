@@ -236,18 +236,22 @@ static void showWinError(char *title) {
     MessageBox(NULL, errortext, title, NULL);
 }
 
-static int handleButtonPress(HWND hwnd, float *(*obrada)(), int offset) {
-    char* out = "Kalkuliranje metrika u tijeku...";
-    SendDlgItemMessage(hwnd, (HMENU)OUTPUT_FIELD, WM_SETTEXT, NULL, out);
+static void handleButtonPress(HWND hwnd, float *(*obrada)(), int offset) {
+    if (totalDays == 0) {
+        MessageBox(NULL, TEXT("Podaci nisu ucitani!"), TEXT("Error"), NULL);
+        return;
+    }
+    char* outText = "Kalkuliranje metrika u tijeku...";
+    SendDlgItemMessage(hwnd, (HMENU)OUTPUT_FIELD, WM_SETTEXT, NULL, outText);
     UpdateWindow(hwnd);
     valRes = obrada();
     if (valRes == NULL) {
         return;
     }
-    out = formatOutputText(valRes, offset);
-    if (out == NULL) return 0;
-    SendDlgItemMessage(hwnd, (HMENU)OUTPUT_FIELD, WM_SETTEXT, NULL, out);
-    free(out);
+    outText = formatOutputText(valRes, offset);
+    if (outText == NULL) return 0;
+    SendDlgItemMessage(hwnd, (HMENU)OUTPUT_FIELD, WM_SETTEXT, NULL, outText);
+    free(outText);
     free(valRes);
 }
 
@@ -332,7 +336,7 @@ static char* formatOutputText(float *in, int offset) {
     char formattedOut[4096] = "";
     char temp[50] = "";
     int end, curr = (offset + 1);
-    if (pData.numDays[0] < curr + 51) {
+    if (pData.numDays[0] < curr + 50) {
         end = pData.numDays[0];
     }
     else {
@@ -341,7 +345,7 @@ static char* formatOutputText(float *in, int offset) {
 
     while (curr < end) {
         sprintf(temp, "%u-%02u-%02u:%20f\r\n", pData.days[curr].year, pData.days[curr].month, pData.days[curr].day, in[curr]);
-        strncat(formattedOut, temp, 49);
+        strncat(formattedOut, temp, 50);
         curr++;
     }
     char* actualOut = malloc(4096);

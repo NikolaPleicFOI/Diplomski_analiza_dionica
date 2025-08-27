@@ -31,7 +31,7 @@ HWND mainWindow;
 static char* data_source_folder = DATA_FOLDER;
 static char inDataInfo[64] = "Podaci nisu ucitani";
 
-static size_t totalDays;
+static size_t totalDays = 0;
 static ProgData pData;
 static clProgramData *ad = NULL, *mm = NULL, *mov = NULL;
 float *valRes;
@@ -49,6 +49,7 @@ static int initWindow(HINSTANCE hInstance, int nCmdShow);
 static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 static void showWinError(char* title);
+static void handleButtonPress(HWND hwnd, float* (*obrada)(), int offset);
 static float* obradiAD();
 static float* obradiMM();
 static float* obradiMov();
